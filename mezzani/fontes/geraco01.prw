@@ -21,15 +21,16 @@
 #DEFINE pST2_NOME_CLIENTE    11
 #DEFINE pST2_BAIRRO          12
 #DEFINE pST2_CIDADE          13
-#DEFINE pST2_TOTAL_PESO      14
+#DEFINE pST2_PESO_BRUTO      14
 #DEFINE pST2_TOTAL_MINIMO    15
-#DEFINE pST2_CONDICAO_PAGTO  16
-#DEFINE pST2_TES             17
-#DEFINE pST2_PRECO_VENDA     18
-#DEFINE pST2_PRECO_UNITARIO  19
-#DEFINE pST2_PEDIDO_TIPO     20
-#DEFINE pST2_ITEM_PRODUTO    21
-#DEFINE pST2_C5_RECNO        22
+#DEFINE pST2_QTD_CAIXA       16
+#DEFINE pST2_CONDICAO_PAGTO  17
+#DEFINE pST2_TES             18
+#DEFINE pST2_PRECO_VENDA     19
+#DEFINE pST2_PRECO_UNITARIO  20
+#DEFINE pST2_PEDIDO_TIPO     21
+#DEFINE pST2_ITEM_PRODUTO    22
+#DEFINE pST2_C5_RECNO        23
 
 
 // Contantes para o Step 3
@@ -54,6 +55,7 @@
 #DEFINE pST3_PEDIDO_TIPO     19
 #DEFINE pST3_ITEM_PRODUTO    20
 #DEFINE pST3_MOTIVO_CORTE    21
+#DEFINE pST3_QTD_CAIXA       22
 
 
 // Contantes para o Pedido
@@ -109,6 +111,7 @@ local _nPesoAtual
 local _oOk              := LoadBitMap(GetResources(), "LBOK")
 local _oNo              := LoadBitMap(GetResources(), "LBNO")
 
+local _nPointer
 local _aCabec
 local _aItens
 local _aLinha
@@ -225,11 +228,11 @@ private lMsErroAuto := .F.
                         _cArqQRY := GetNextAlias()
 
                         _cQuery := " SELECT SC5.C5_NUM PEDIDO, SC5.C5_TIPO TIPO_PEDIDO, SC5.C5_X_MAN MANIFESTO, SC5.C5_CONDPAG CONDPAG, "           + Chr(13)+Chr(10)
-                        _cQuery += "        SC5.R_E_C_N_O_ RECNO, SB1.B1_DESC DESCRICAO, SB1.B1_PESO PESO_TOTAL, SC6.C6_PRODUTO PRODUTO, "          + Chr(13)+Chr(10)
-                        _cQuery += "        SC6.C6_ITEM ITEM_PRODUTO, SC6.C6_X_MTVCT MOT_CORTE, SC6.C6_QTDVEN VENDIDO, SC6.C6_QTDENT ENTREGUE, "    + Chr(13)+Chr(10)
-                        _cQuery += "        SC6.C6_TES TES, SC6.C6_PRCVEN PRECO_VENDA, SC6.C6_PRUNIT PRECO_UNITARIO, SC6.C6_UNSVEN UNSVEN, "        + Chr(13)+Chr(10)
-                        _cQuery += "        SA1.A1_COD CODIGO, SA1.A1_LOJA LOJA, A1_NOME CLIENTE, SA1.A1_BAIRRO BAIRRO, SA1.A1_MUN CIDADE, "        + Chr(13)+Chr(10)
-                        _cQuery += "        SA4.A4_X_PSMIN PESO_MINIMO"                                                                             + Chr(13)+Chr(10)
+                        _cQuery += "        SC5.R_E_C_N_O_ RECNO, SB1.B1_DESC DESCRICAO, SB1.B1_PESO PESO_TOTAL, SB1.B1_CONV QTD_CAIXA, "           + Chr(13)+Chr(10)
+                        _cQuery += "        SC6.C6_PRODUTO PRODUTO,  SC6.C6_ITEM ITEM_PRODUTO, SC6.C6_X_MTVCT MOT_CORTE, SC6.C6_QTDVEN VENDIDO, "   + Chr(13)+Chr(10)
+                        _cQuery += "        SC6.C6_QTDENT ENTREGUE, SC6.C6_TES TES, SC6.C6_PRCVEN PRECO_VENDA, SC6.C6_PRUNIT PRECO_UNITARIO, "      + Chr(13)+Chr(10)
+                        _cQuery += "        SC6.C6_UNSVEN UNSVEN, SA1.A1_COD CODIGO, SA1.A1_LOJA LOJA, A1_NOME CLIENTE, SA1.A1_BAIRRO BAIRRO, "     + Chr(13)+Chr(10)
+                        _cQuery += "        SA1.A1_MUN CIDADE, SA4.A4_X_PSMIN PESO_MINIMO"                                                          + Chr(13)+Chr(10)
                         _cQuery += "   FROM " + RetSqlName("SC5") + " SC5 (NOLOCK) "								    + Chr(13)+Chr(10)
                         _cQuery += "  INNER JOIN " + RetSqlName("SC6") + " SC6 (NOLOCK) ON SC6.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
                         _cQuery += "                               AND SC6.C6_FILIAL = '" + xFilial("SC6") + "' AND SC5.C5_NUM = SC6.C6_NUM"	    + Chr(13)+Chr(10)
@@ -294,6 +297,7 @@ private lMsErroAuto := .F.
                                                         (_cArqQRY)->CIDADE,             ;   // CIDADE
                                                         (_cArqQRY)->PESO_TOTAL,         ;   // PESO
                                                         (_cArqQRY)->PESO_MINIMO,        ;   // PESO MINIMO
+                                                        (_cArqQRY)->QTD_CAIXA,          ;   // CAIXA
                                                         (_cArqQRY)->CONDPAG,            ;   // CONDICAO DE PAGAMENTO
                                                         (_cArqQRY)->TES,                ;   // TES
                                                         (_cArqQRY)->PRECO_VENDA,        ;   // PRECO DE VENDA
@@ -390,7 +394,9 @@ private lMsErroAuto := .F.
 
                                 if _aStep2[ _nPos, pST2_CORTE ]:CNAME == "LBOK"
 
-                                        _nPesoAtual := _aStep2[ _nPos, pST2_TOTAL_PESO ] *  _aStep2[ _nPos, pST2_SALDO_PEDIDO ]
+                                        _nPesoAtual := _aStep2[ _nPos, pST2_SALDO_PEDIDO ] -  _aStep2[ _nPos, pST2_SALDO_CORTE ]
+                                        _nPesoAtual := _nPesoAtual * _aStep2[ _nPos, pST2_PESO_BRUTO ]
+                                        _nPesoAtual := _nPesoAtual * _aStep2[ _nPos, pST2_QTD_CAIXA ]
 
                                         AAdd( _aStep3,{ _oOk,                                                                       ;   // CORTE
                                                         _aStep2[ _nPos, pST2_PRODUTO ],                                             ;   // PRODUTO
@@ -414,7 +420,8 @@ private lMsErroAuto := .F.
                                                         _aStep2[ _nPos, pST2_PRECO_UNITARIO ],                                      ;   // PRECO UNITARIO
                                                         _aStep2[ _nPos, pST2_PEDIDO_TIPO ],                                         ;   // TIPO PEDIDO
                                                         _aStep2[ _nPos, pST2_ITEM_PRODUTO ],                                        ;   // ITEM DO PEDIDO
-                                                        _aStep2[ _nPos, pST2_MOTIVO_CORTE ]                                         ;   // MOTIVO CORTE
+                                                        _aStep2[ _nPos, pST2_MOTIVO_CORTE ],                                        ;   // MOTIVO CORTE
+                                                        _aStep2[ _nPos, pST2_QTD_CAIXA ]                                            ;   // QUANTIDADE CAIXA
                                                 } )
 
                                 endif
@@ -480,8 +487,9 @@ private lMsErroAuto := .F.
                                                                 _aStep3[_oBrowStep3:nAt, pST3_QTDE_DISP   ] ,;
                                                                 _aStep3[_oBrowStep3:nAt, pST3_QTDE_CORTE  ] ,;
                                                                 _aStep3[_oBrowStep3:nAt, pST3_PESO_MINIMO ] ,;
-                                                                _aStep3[_oBrowStep3:nAt, pST3_PESO_ATUAL  ]  ;
+                                                                Transform( _aStep3[_oBrowStep3:nAt, pST3_PESO_ATUAL  ], PesqPict("SB1","B1_CONV") ) ;
                                                         }}
+
 
 /*                                _oBrowStep3:bChange     := {|| iif( Left( _cFormaProce, 1 ) == "1", aSort( _oBrowStep3:aArray, , , {|x,y| x[ pST3_QTDE_DISP ] > y[ pST3_QTDE_DISP ]}), ;
                                                                                                     aSort( _oBrowStep3:aArray, , , {|x,y| x[ pST3_QTDE_DISP ] < y[ pST3_QTDE_DISP ]}) ) } */
@@ -506,20 +514,15 @@ private lMsErroAuto := .F.
 
                         if msgYesNo("O Processo e Irrversivel e ira ajustar os pedidos conforme o parametro.","DESEJA CONFIRMAR CORTE")
 
-                                // Monta a estrutura com os pedidos selecionados
+                                // Separa os pedidos a serem processados
                                 _aPed := {}
                                 for _nPos := 1 to len( _aStep3 )
 
                                         if _aStep3[ _nPos, pST3_CORTE ]:CNAME == "LBOK"
-                                                if AScan( _aPed, { |x|  x[ pPED_PEDIDO ] == _aStep3[ _nPos, pST3_PEDIDO] .and. ;
-                                                                        x[ pPED_PRODUTO ] == _aStep3[ _nPos, pST3_pPRODUTO ] .and. ;
-                                                                        x[ pPED_ITEM ] == _aStep3[ _nPos, pST3_ITEM_PRODUTO ] }  ) == 0
-                                                                AAdd( _aPed,    {       _aStep3[ _nPos, pST3_PEDIDO         ], ;
-                                                                                        _aStep3[ _nPos, pST3_pPRODUTO     ], ;
-                                                                                        _aStep3[ _nPos, pST3_ITEM_PRODUTO ], ;
-                                                                                        _aStep3[ _nPos, pST3_QTDE_CORTE   ], ;
-                                                                                        _aStep3[ _nPos, pST3_MOTIVO_CORTE ]  ;
-                                                                                } )
+
+                                                if AScan( _aPed, _aStep3[ _nPos, pST3_PEDIDO] ) == 0
+
+                                                        AAdd( _aPed,    _aStep3[ _nPos, pST3_PEDIDO ] )
 
                                                 endif
                                         EndIf
@@ -530,13 +533,13 @@ private lMsErroAuto := .F.
                                 // Tratamento para evitar erro no momento do processamento dos itens
                                 if len( _aPed ) > 0
 
-                                        _aPed := aSort( _aPed, , , {|x,y| x[ pPED_PEDIDO ]+x[ pPED_PRODUTO ]+x[ pPED_ITEM ] < y[ pPED_PEDIDO ]+y[ pPED_PRODUTO ]+y[ pPED_ITEM ] } )
+                                        _aPed := aSort( _aPed, , , {|x,y| x < y } )
 
                                         // Com os pedidos selecionados, monta a estrutura para alteracao no ppedido e excluir caso a
                                         // Quantidade de corte seja igual a 0
                                         for _nPos := 1 to len( _aPed )
 
-                                                If SC5->( dbSetOrder(1), dbSeek( xFilial("SC5") + _aPed[ _nPos ][ pPED_PEDIDO ] ) )
+                                                If SC5->( dbSetOrder(1), dbSeek( xFilial("SC5") + _aPed[ _nPos ] ) )
 
                                                         _aCabec   := {}
                                                         _aItens   := {}
@@ -554,48 +557,58 @@ private lMsErroAuto := .F.
                                                                         SC6->C6_NUM == SC5->C5_NUM .and. ;
                                                                         ! SC6->( Eof() )
 
-                                                                        _aLinha := {}
-                                                                        AAdd( _aLinha, { "LINPOS",     "C6_ITEM",       SC6->C6_ITEM } )
-                                                                        AAdd( _aLinha, { "AUTDELETA",  "N",             Nil})
-                                                                        AAdd( _aLinha, { "C6_PRODUTO", SC6->C6_PRODUTO, Nil})
+                                                                        _lDeletItem := .F.
+                                                                        if ( _nPointer := AScan( _aStep3, { |x| x[ pST3_PEDIDO ] == SC6->C6_NUM .and. x[ pST3_pPRODUTO ] == SC6->C6_PRODUTO .and. x[ pST3_ITEM_PRODUTO ] == SC6->C6_ITEM } ) ) > 0
+                                                                                if SC6->C6_UNSVEN - _aStep3[ _nPointer ][ pST3_QTDE_CORTE ] == 0
+                                                                                        _lDeletItem := .T.
+                                                                                        RecLock("SC6",.F.)
+                                                                                                SC6->(dbDelete())
+                                                                                        SC6->(msUnLock())
+                                                                                EndIf
+                                                                        endif
 
-                                                                        // Alteracao do Item do pedido com a quantidade de Corte
-                                                                        //If SC6->C6_NUM == _aPed[ _nPos ][ pPED_PEDIDO ] .and. ;
-                                                                        //        SC6->C6_PRODUTO == _aPed[ _nPos ][ pPED_PRODUTO ] .and. ;
-                                                                        //        SC6->C6_ITEM == _aPed[ _nPos ][ pPED_ITEM ]
-                                                                        if ( _nPointer := AScan( _aPed, { |x| x[ pPED_PEDIDO ] == SC6->C6_NUM .and. x[ pPED_PRODUTO ] == SC6->C6_PRODUTO .and. x[ pPED_ITEM ] == SC6->C6_ITEM } ) ) > 0
+                                                                        if ! _lDeletItem
 
-                                                                                _nQtdVen    := SC6->C6_QTDVEN - _aPed[ _nPos ][ pPED_CORTE        ]
-                                                                                _nPrcTotal  := SC6->C6_PRUNIT * _nQtdVen
-                                                                                _nQtdUnsVen := SC6->C6_UNSVEN - _aPed[ _nPos ][ pPED_CORTE        ]
-                                                                                _nQtdQTDCT  := _aPed[ _nPos ][ pPED_CORTE        ]                                                                                
-                                                                                _cMtvCorte  := Left( _aPed[ _nPos ][ pPED_MOTIVO_CORTE ], 2 )
-                                                                                _dDtaCorte  := Date()
+                                                                                _aLinha := {}
+                                                                                AAdd( _aLinha, { "LINPOS",     "C6_ITEM",       SC6->C6_ITEM } )
+                                                                                AAdd( _aLinha, { "AUTDELETA",  "N",             Nil})
+                                                                                AAdd( _aLinha, { "C6_PRODUTO", SC6->C6_PRODUTO, Nil})
 
-                                                                                AAdd( _aLinha, { "C6_QTDVEN",  _nQtdVen,         Nil})
-                                                                                AAdd( _aLinha, { "C6_PRCVEN",  SC6->C6_PRCVEN,   Nil})
-                                                                                AAdd( _aLinha, { "C6_PRUNIT",  SC6->C6_PRUNIT,   Nil})
-                                                                                AAdd( _aLinha, { "C6_VALOR",   _nPrcTotal,       Nil})
-                                                                                AAdd( _aLinha, { "C6_UNSVEN",  _nQtdUnsVen,      Nil})
+                                                                                if  _nPointer > 0
 
-                                                                                AAdd( _aLinha, { "C6_X_MTVCT", _cMtvCorte,       Nil})
-                                                                                AAdd( _aLinha, { "C6_X_DATCT", _dDtaCorte,       Nil})
-                                                                                AAdd( _aLinha, { "C6_X_QTDCT", _nQtdQTDCT,       Nil})
+                                                                                        _nQtdVen    := ( _aStep3[ _nPointer ][ pST3_QTDE_DISP ] - _aStep3[ _nPointer ][ pST3_QTDE_CORTE ] ) * _aStep3[ _nPointer ][ pST3_QTD_CAIXA ]
+                                                                                        _nPrcTotal  := SC6->C6_PRUNIT * _nQtdVen
+                                                                                        _nQtdUnsVen := SC6->C6_UNSVEN - _aStep3[ _nPointer ][ pST3_QTDE_CORTE ]
+                                                                                        _nQtdQTDCT  := SC6->C6_X_QTDCT + _aStep3[ _nPointer ][ pST3_QTDE_CORTE ]
+                                                                                        _cMtvCorte  := Left( _aStep3[ _nPointer ][ pST3_MOTIVO_CORTE ], 2 )
+                                                                                        _dDtaCorte  := Date()
 
-                                                                        Else
-                                                                                AAdd( _aLinha, { "C6_QTDVEN",  SC6->C6_QTDVEN,   Nil})
-                                                                                AAdd( _aLinha, { "C6_PRCVEN",  SC6->C6_PRCVEN,   Nil})
-                                                                                AAdd( _aLinha, { "C6_PRUNIT",  SC6->C6_PRUNIT,   Nil})
-                                                                                AAdd( _aLinha, { "C6_VALOR",   SC6->C6_VALOR,    Nil})
-                                                                                AAdd( _aLinha, { "C6_UNSVEN",  SC6->C6_UNSVEN,   Nil})                                                                                
+                                                                                        AAdd( _aLinha, { "C6_QTDVEN",  _nQtdVen,         Nil})
+                                                                                        AAdd( _aLinha, { "C6_PRCVEN",  SC6->C6_PRCVEN,   Nil})
+                                                                                        AAdd( _aLinha, { "C6_PRUNIT",  SC6->C6_PRUNIT,   Nil})
+                                                                                        AAdd( _aLinha, { "C6_VALOR",   _nPrcTotal,       Nil})
+                                                                                        AAdd( _aLinha, { "C6_UNSVEN",  _nQtdUnsVen,      Nil})
 
-                                                                                AAdd( _aLinha, { "C6_X_MTVCT", " ",              Nil})
-                                                                                AAdd( _aLinha, { "C6_X_DATCT", CTod(''),         Nil})
-                                                                                AAdd( _aLinha, { "C6_X_QTDCT", 0,                Nil})
+                                                                                        AAdd( _aLinha, { "C6_X_MTVCT", _cMtvCorte,       Nil})
+                                                                                        AAdd( _aLinha, { "C6_X_DATCT", _dDtaCorte,       Nil})
+                                                                                        AAdd( _aLinha, { "C6_X_QTDCT", _nQtdQTDCT,       Nil})
+
+                                                                                Else
+                                                                                        AAdd( _aLinha, { "C6_QTDVEN",  SC6->C6_QTDVEN,   Nil})
+                                                                                        AAdd( _aLinha, { "C6_PRCVEN",  SC6->C6_PRCVEN,   Nil})
+                                                                                        AAdd( _aLinha, { "C6_PRUNIT",  SC6->C6_PRUNIT,   Nil})
+                                                                                        AAdd( _aLinha, { "C6_VALOR",   SC6->C6_VALOR,    Nil})
+                                                                                        AAdd( _aLinha, { "C6_UNSVEN",  SC6->C6_UNSVEN,   Nil})
+
+                                                                                        AAdd( _aLinha, { "C6_X_MTVCT", SC6->C6_X_MTVCT,  Nil})
+                                                                                        AAdd( _aLinha, { "C6_X_DATCT", SC6->C6_X_DATCT,  Nil})
+                                                                                        AAdd( _aLinha, { "C6_X_QTDCT", SC6->C6_X_QTDCT,  Nil})
+
+                                                                                EndIf
+                                                                                AAdd( _aLinha, { "C6_TES", SC6->C6_TES, Nil})
+                                                                                AAdd( _aItens, _aLinha )
 
                                                                         EndIf
-                                                                        AAdd( _aLinha, { "C6_TES", SC6->C6_TES, Nil})
-                                                                        AAdd( _aItens, _aLinha )
 
                                                                         SC6->( dbSkip() )
 
