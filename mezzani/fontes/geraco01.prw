@@ -8,59 +8,59 @@
 
 
 // Array com os pedidos seleconados
-#DEFINE pPED_MRK_STEP_2            1
-#DEFINE pPED_MRK_STEP_3            2
-#DEFINE pPED_PEDIDO                3
-#DEFINE pPED_COD_PROD              4
-#DEFINE pPED_DESC_PROD             5
-#DEFINE pPED_PESO_MINIMO_PRODUTO   6
-#DEFINE pPED_PESO_PRODUTO          7
-#DEFINE pPED_CAIXA_PRODUTO         8
-#DEFINE pPED_SALDO_PEDIDO          9
-#DEFINE pPED_SALDO_CORTE          10
-#DEFINE pPED_MANIFESTO            11
-#DEFINE pPED_MOTIVO_CORTE         12
-#DEFINE pPED_PERCENTUAL_CORTE     13
-#DEFINE pPED_CODIGO_CLIENTE       14
-#DEFINE pPED_LOJA_CLIENTE         15
-#DEFINE pPED_NOME_CLIENTE         16
-#DEFINE pPED_BAIRRO_CLIENTE       17
-#DEFINE pPED_CIDADE_CLIENTE       18
+#DEFINE pPED_MRK_STEP_2                   1
+#DEFINE pPED_MRK_STEP_3                   2
+#DEFINE pPED_PEDIDO                       3
+#DEFINE pPED_COD_PROD                     4
+#DEFINE pPED_DESC_PROD                    5
+#DEFINE pPED_PESO_MINIMO_PRODUTO_TRANSP   6
+#DEFINE pPED_PESO_PRODUTO                 7
+#DEFINE pPED_CAIXA_PRODUTO                8
+#DEFINE pPED_SALDO_PEDIDO                 9
+#DEFINE pPED_SALDO_CORTE                 10
+#DEFINE pPED_MANIFESTO                   11
+#DEFINE pPED_MOTIVO_CORTE                12
+#DEFINE pPED_PERCENTUAL_CORTE            13
+#DEFINE pPED_CODIGO_CLIENTE              14
+#DEFINE pPED_LOJA_CLIENTE                15
+#DEFINE pPED_NOME_CLIENTE                16
+#DEFINE pPED_BAIRRO_CLIENTE              17
+#DEFINE pPED_CIDADE_CLIENTE              18
 
 
 
 // Contantes para o Step 2
-#DEFINE pST2_CORTE                 1
-#DEFINE pST2_PRODUTO               2
-#DEFINE pST2_DESCRICAO             3
-#DEFINE pST2_SALDO_PEDIDO          4
-#DEFINE pST2_SALDO_CORTE           5
-#DEFINE pST2_MOTIVO_CORTE          6
-#DEFINE pST2_MANIFESTO             7
-#DEFINE pST2_PERCENTUAL_CORTE      8
-#DEFINE pST2_ITEMS                 9
+#DEFINE pST2_CORTE                        1
+#DEFINE pST2_PRODUTO                      2
+#DEFINE pST2_DESCRICAO                    3
+#DEFINE pST2_SALDO_PEDIDO                 4
+#DEFINE pST2_SALDO_CORTE                  5
+#DEFINE pST2_MOTIVO_CORTE                 6
+#DEFINE pST2_MANIFESTO                    7
+#DEFINE pST2_PERCENTUAL_CORTE             8
+#DEFINE pST2_ITEMS                        9
 
-#DEFINE pST2_ITEM_PEDIDO           1
-#DEFINE pST2_ITEM_SALDO_PEDIDO     2
-#DEFINE pST2_ITEM_SALDO_CORTE      3
+#DEFINE pST2_ITEM_PEDIDO                  1
+#DEFINE pST2_ITEM_SALDO_PEDIDO            2
+#DEFINE pST2_ITEM_SALDO_CORTE             3
 
 
 
 // Contantes para o Step 3
-#DEFINE pST3_CORTE                 1
-#DEFINE pST3_PRODUTO               2
-#DEFINE pST3_DESC_PROD             3
-#DEFINE pST3_NOME_CLIENTE          4
-#DEFINE pST3_BAIRRO                5
-#DEFINE pST3_CIDADE                6
-#DEFINE pST3_PEDIDO                7
-#DEFINE pST3_MANIFESTO             8
-#DEFINE pST3_QTDE_DISP             9
-#DEFINE pST3_QTDE_CORTE           10
-#DEFINE pST3_PESO_MINIMO          11
-#DEFINE pST3_PESO_PRODUTO         12
-#DEFINE pST3_PESO_ATUAL           13
-#DEFINE pST3_QTD_CAIXA            14
+#DEFINE pST3_CORTE                        1
+#DEFINE pST3_PRODUTO                      2
+#DEFINE pST3_DESC_PROD                    3
+#DEFINE pST3_NOME_CLIENTE                 4
+#DEFINE pST3_BAIRRO                       5
+#DEFINE pST3_CIDADE                       6
+#DEFINE pST3_PEDIDO                       7
+#DEFINE pST3_MANIFESTO                    8
+#DEFINE pST3_QTDE_DISP                    9
+#DEFINE pST3_QTDE_CORTE                  10
+#DEFINE pST3_PESO_MINIMO_PRODUTO_TRANSP  11
+#DEFINE pST3_PESO_PRODUTO                12
+#DEFINE pST3_PESO_ATUAL                  13
+#DEFINE pST3_QTD_CAIXA                   14
 
 
 
@@ -103,6 +103,7 @@ local _oDlg3
 local _oPainel3
 local _oBrowStep3
 local _aStep3
+local _lValidPesoTransp
 local _aButtons3        := {}
 local _nPesoAtual
 
@@ -242,7 +243,7 @@ private lMsErroAuto := .F.
                                         _cQuery += "        SC6.C6_PRODUTO PRODUTO,  SC6.C6_ITEM ITEM_PRODUTO, SC6.C6_X_MTVCT MOT_CORTE, SC6.C6_QTDVEN VENDIDO, "   + Chr(13)+Chr(10)
                                         _cQuery += "        SC6.C6_QTDENT ENTREGUE, SC6.C6_TES TES, SC6.C6_PRCVEN PRECO_VENDA, SC6.C6_PRUNIT PRECO_UNITARIO, "      + Chr(13)+Chr(10)
                                         _cQuery += "        SC6.C6_UNSVEN UNSVEN, SA1.A1_COD CODIGO, SA1.A1_LOJA LOJA, A1_NOME CLIENTE, SA1.A1_BAIRRO BAIRRO, "     + Chr(13)+Chr(10)
-                                        _cQuery += "        SA1.A1_MUN CIDADE, SA4.A4_X_PSMIN PESO_MINIMO"                                                          + Chr(13)+Chr(10)
+                                        _cQuery += "        SA1.A1_MUN CIDADE, SA4.A4_X_PSMIN PESO_MINIMO_TRANSP"                                                          + Chr(13)+Chr(10)
                                         _cQuery += "   FROM " + RetSqlName("SC5") + " SC5 (NOLOCK) "								    + Chr(13)+Chr(10)
                                         _cQuery += "  INNER JOIN " + RetSqlName("SC6") + " SC6 (NOLOCK) ON SC6.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
                                         _cQuery += "                               AND SC6.C6_FILIAL = '" + xFilial("SC6") + "' AND SC5.C5_NUM = SC6.C6_NUM"	    + Chr(13)+Chr(10)
@@ -297,7 +298,7 @@ private lMsErroAuto := .F.
                                                                                 (_cArqQRY)->PEDIDO,             ;   // PEDIDO
                                                                                 (_cArqQRY)->PRODUTO,            ;   // PRODUTO
                                                                                 (_cArqQRY)->DESCRICAO,          ;   // DESCRICAO
-                                                                                (_cArqQRY)->PESO_MINIMO,        ;   // PESO MINIMO PRODUTO
+                                                                                (_cArqQRY)->PESO_MINIMO_TRANSP, ;   // PESO MINIMO PRODUTO TRANSPORTADORA
                                                                                 (_cArqQRY)->PESO_PRODUTO,       ;   // PESO PRODUTO                                                                        
                                                                                 (_cArqQRY)->QTD_CAIXA,          ;   // CAIXA PRODUTO
                                                                                 (_cArqQRY)->UNSVEN,             ;   // iif( (_cArqQRY)->ENTREGUE < (_cArqQRY)->VENDIDO, ( (_cArqQRY)->VENDIDO - (_cArqQRY)->ENTREGUE ), (_cArqQRY)->VENDIDO ), ;   // SALDO PEDIDO
@@ -407,7 +408,7 @@ private lMsErroAuto := .F.
                                                                                                                         },,_oPainel2,,,,,,,,,,,, .F.,, .T.,, .T.,,,)
 
                                                 _oBrowStep2:bLDblClick := {||   (       iif( _aStep2[_oBrowStep2:nAt, pST2_CORTE ]:CNAME == "LBNO", ;
-                                                                                                        iif(    Inf_Step2( @_aStep2[_oBrowStep2:nAt] ),;
+                                                                                                        iif(    Inf_Step2( @_aStep2[_oBrowStep2:nAt], _cCboMotivoCorte ),;
                                                                                                                 _aStep2[_oBrowStep2:nAt, pST2_CORTE ] := _oOk, ;
                                                                                                                 _aStep2[_oBrowStep2:nAt, pST2_CORTE ] := _oNo ), ;
                                                                                                         ( _aStep2[_oBrowStep2:nAt, pST2_CORTE ] := _oNo, ;
@@ -486,41 +487,65 @@ private lMsErroAuto := .F.
                                 If Len( _aPedidos ) > 0
 
                                         // Carrega os titulos seleciionados
-                                        _aStep3 := { }
+                                        _aStep3           := { }
+                                        _lValidPesoTransp := .F.
                                         for _nPos := 1 to len( _aPedidos )
 
-                                                if _aPedidos[ _nPos, pPED_MRK_STEP_2 ]:CNAME == "LBOK" .and. _aPedidos[ _nPos ][ pPED_SALDO_CORTE ] > 0
+                                                if _aPedidos[ _nPos ][ pPED_MRK_STEP_2 ]:CNAME == "LBOK" .and. _aPedidos[ _nPos ][ pPED_SALDO_CORTE ] > 0
 
-                                                        _nPesoAtual := _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ] -  _aPedidos[ _nPos ][ pPED_SALDO_CORTE ]
+                                                        // _nPesoAtual := _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ] -  _aPedidos[ _nPos ][ pPED_SALDO_CORTE ]
+                                                        _nPesoAtual := _aPedidos[ _nPos ][ pPED_SALDO_CORTE ]
                                                         _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ]
                                                         _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]
 
-                                                        AAdd( _aStep3,  {         ;
-                                                                                _oOk,                                                           ;   // CORTE
-                                                                                _aPedidos[ _nPos ][ pPED_COD_PROD ],                             ;   // PRODUTO
-                                                                                _aPedidos[ _nPos ][ pPED_DESC_PROD ],                           ;   // DESCRICAO
-                                                                                '(' + _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] + '-' +         ;
-                                                                                _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
-                                                                                Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
-                                                                                _aPedidos[ _nPos ][ pPED_BAIRRO_CLIENTE ],                      ;   // BAIRRO
-                                                                                _aPedidos[ _nPos ][ pPED_CIDADE_CLIENTE ],                      ;   // CIDADE
-                                                                                _aPedidos[ _nPos ][ pPED_PEDIDO ],                              ;   // PEDIDO
-                                                                                _aPedidos[ _nPos ][ pPED_MANIFESTO ],                           ;   // MANITESTO
-                                                                                _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ],                        ;   // QTDE DISP
-                                                                                _aPedidos[ _nPos ][ pPED_SALDO_CORTE ],                         ;   // QTDE A CORTAR
-                                                                                _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO ],                 ;   // PESO MINIMO
-                                                                                _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ],                        ;   // PESO PRODUTO
-                                                                                _nPesoAtual,                                                    ;   // PESO ATUAL
-                                                                                _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]                        ;   // QUANTIDADE CAIXA
-                                                                        } )
+
+                                                        //
+                                                        // Incluida a validacao para desconsiderar produtos onde o peso esta abaixo do definido no cadastro.
+                                                        //
+                                                        If iif( Left( _cVldPeso, 1 ) == '1', _nPesoAtual >= _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ], .T. )
+
+                                                                AAdd( _aStep3,  {         ;
+                                                                                        _oOk,                                                           ;   // CORTE
+                                                                                        _aPedidos[ _nPos ][ pPED_COD_PROD ],                            ;   // PRODUTO
+                                                                                        _aPedidos[ _nPos ][ pPED_DESC_PROD ],                           ;   // DESCRICAO
+                                                                                        '(' + _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] + '-' +         ;
+                                                                                        _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
+                                                                                        Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
+                                                                                        _aPedidos[ _nPos ][ pPED_BAIRRO_CLIENTE ],                      ;   // BAIRRO
+                                                                                        _aPedidos[ _nPos ][ pPED_CIDADE_CLIENTE ],                      ;   // CIDADE
+                                                                                        _aPedidos[ _nPos ][ pPED_PEDIDO ],                              ;   // PEDIDO
+                                                                                        _aPedidos[ _nPos ][ pPED_MANIFESTO ],                           ;   // MANITESTO
+                                                                                        _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ],                        ;   // QTDE DISP
+                                                                                        _aPedidos[ _nPos ][ pPED_SALDO_CORTE ],                         ;   // QTDE A CORTAR
+                                                                                        _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ],          ;   // PESO MINIMO PRODUTO TRANSPORTADORA
+                                                                                        _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ],                        ;   // PESO PRODUTO
+                                                                                        _nPesoAtual,                                                    ;   // PESO ATUAL
+                                                                                        _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]                        ;   // QUANTIDADE CAIXA
+                                                                                } )
+                                                        Else
+                                                                _lValidPesoTransp := .T.
+                                                        EndIf
 
                                                 endif
 
                                         next
 
+
+                                        //
+                                        // Exibe a mensagem ao usuario onformando que existem produtos que nao atigiram o peso minimo para corte.
+                                        //
+                                        If _lValidPesoTransp
+                                                msgAlert("Exitem produtos que nao atingiram o peso minimo para corte!","Atencao")
+                                        EndIf
+
+                                        //
+                                        // Processa somente se existirem produtos disponiveis para corte.
+                                        //
                                         if len( _aStep3 ) > 0
 
-                                                // Define a ordem de exibicao dos dados
+                                                //
+                                                // Define a ordem de exibicao dos produtos na grade.
+                                                //
                                                 if Left( _cFormaProce, 1 ) == "1"
                                                         _aStep3 := aSort( _aStep3, , , {|x,y| x[ pST3_QTDE_DISP ] > y[ pST3_QTDE_DISP ]})
                                                 else
@@ -567,17 +592,17 @@ private lMsErroAuto := .F.
 
                                                 _oBrowStep3:bLine :=    {||     ;
                                                                                 {       ;     
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_CORTE        ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_PRODUTO      ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_DESC_PROD    ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_NOME_CLIENTE ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_BAIRRO       ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_CIDADE       ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_PEDIDO       ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_MANIFESTO    ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_QTDE_DISP    ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_QTDE_CORTE   ], ;
-                                                                                        _aStep3[_oBrowStep3:nAt, pST3_PESO_MINIMO  ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_CORTE                      ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_PRODUTO                    ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_DESC_PROD                  ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_NOME_CLIENTE               ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_BAIRRO                     ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_CIDADE                     ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_PEDIDO                     ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_MANIFESTO                  ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_QTDE_DISP                  ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_QTDE_CORTE                 ], ;
+                                                                                        _aStep3[_oBrowStep3:nAt, pST3_PESO_MINIMO_PRODUTO_TRANSP ], ;
                                                                                         Transform( _aStep3[_oBrowStep3:nAt, pST3_PESO_ATUAL  ], PesqPict("SB1","B1_PESO") ) ;
                                                                                 }       ;
                                                                         }
@@ -822,86 +847,116 @@ Doc. Origem.........:
 Solicitante.........: 
 Uso.................: 
 =======================================================================================*/
-//STATIC FUNCTION Inf_Step2( _aArray, _cDescriProd, _nQuantPedido, _nQuantCorte, _cMotivoCorte )
-STATIC FUNCTION Inf_Step2( _aArray )
+STATIC FUNCTION Inf_Step2( _aArray, _cMotivoCorte )
 
 
-local _oDlg1
-local _oCboMotivoCorte
-local _aTblMotvCort      := { }
-local _lRetValue         := .F.
-
-local _cDescriProd       := _aArray[ pST2_DESCRICAO ]
-local _nQuantPedido      := _aArray[ pST2_SALDO_PEDIDO ]
-local _nQuantCorte       := _aArray[ pST2_SALDO_CORTE ]
-local _cMotivoCorte      := _aArray[ pST2_MOTIVO_CORTE ]
-
+local _oDlg
+local _oPainel1
+local _oPainel2
+local _oSay
+local _oBrowse
+local _aArrTemp  := {}
+local _lAtu      := .T.
 local _nPos
-local _nPerc
-local _nResult
-local _nSoma
+local _nPointer
+local _nSaldo    := 0
+local _lRetValue := .T.
 
- // _aStep2[_oBrowStep2:nAt, pST2_DESCRICAO ], _aStep2[_oBrowStep2:nAt, pST2_SALDO_PEDIDO ], @_aStep2[_oBrowStep2:nAt, pST2_SALDO_CORTE ], @_aStep2[_oBrowStep2:nAt, pST2_MOTIVO_CORTE ] ),;
 
-        If SX5->( dbSetOrder(1), dbSeek( xFilial("SX5") + "Z4" ) )
-                while SX5->X5_TABELA == 'Z4' .and. ;
-                        SX5->( .not. Eof() )
-                        AAdd( _aTblMotvCort, Alltrim( SX5->X5_CHAVE ) + "-" + Alltrim( SX5->X5_DESCRI ) )
-                        SX5->( dbSkip() )
-                enddo
-        Else
-                AAdd( _aTblMotvCort, " " )
-        EndIf
+        for _nPos := 1 to len( _aArray[ pST2_ITEMS ] )
 
-        @ 00,00 TO 210,470 DIALOG _oDlg1 TITLE OemToAnsi( "Dados para o Corte" )
+                AAdd( _aArrTemp,{       ;
+                                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_PEDIDO ],             ;   // PEDIDO
+                                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_PEDIDO ],       ;   // SALDO PEDIDO
+                                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_CORTE ]         ;   // SALDO CORTE
+                                } )
 
-        @ 20,018        SAY     "Produto:"
-        @ 20,085        GET     _cDescriProd                    ;
-                        PICTURE PesqPict("SB1","B1_DESC")       ;
-                        WHEN   .F.
+                _nSaldo += _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_CORTE ]
 
-        @ 35,018        SAY     "Quantidade de Corte:"
-        @ 35,085        GET     _nQuantCorte                    ;
-                        PICTURE PesqPict("SB1","B1_CONV")       ;
-                        VALID   iif( _nQuantCorte > _nQuantPedido, ( msgAlert("Valor do corte nao pode ser maior que a quantidade disponivel !","Atencao"), .F. ), .T. )
+        next
 
-        @ 50,018        SAY     "Motivo Corte:"
-        @ 50,085        COMBOBOX _oCboMotivoCorte;
-                        VAR     _cMotivoCorte                   ;
-                        ITEMS   _aTblMotvCort                   ;
-                        SIZE    90,20                           ;
-                        PIXEL                                   ;
-                        OF      _oDlg1
 
-        @ 090,110 BMPBUTTON TYPE 01 ACTION ( _lRetValue := .T., Close(_oDlg1) )
-        @ 090,140 BMPBUTTON TYPE 02 ACTION ( _lRetValue := .F., Close(_oDlg1) )
+        @ 00,00 TO 410,520 DIALOG _oDlg TITLE OemToAnsi( "Dados para o Corte" )
 
-        ACTIVATE  DIALOG _oDlg1 CENTER
+        _oPainel1       := TPanel():New(010,000,,_oDlg, NIL, .T., .F., NIL, NIL,050,020, .T., .F. )
+        _oPainel1:Align := CONTROL_ALIGN_TOP // CONTROL_ALIGN_ALLCLIENT
 
-        // Case tenha sido pressionado o botao de cancelamento da janela.
-        If _lRetValue
+        _oSay              := TSay():New( 005, 010,{|| 'Saldo:' + Transform( _nSaldo, '@E 999.99' )}, _oPainel1,,,,,,.T.,,,200,50)
+        _oSay:nClientWidth := _oPainel1:nClientWidth
+        _oSay:nWidth       := _oPainel1:nWidth
 
-                _nPerc := ( _nQuantCorte / _nQuantPedido ) * 100
 
+        _oPainel2       := TPanel():New(240,000,,_oDlg, NIL, .T., .F., NIL, NIL,000,200, .T., .F. )
+        _oPainel2:Align := CONTROL_ALIGN_ALLCLIENT
+
+
+        _oBrowse := TwBrowse():New(005, 005,,,, {       "PEDIDO",       ;
+                                                        "DISPONIVEL",   ;
+                                                        "CORTE"         ;
+                                                },,_oPainel2,,,,,,,,,,,, .F.,, .T.,, .T.,,,)
+
+        _oBrowse:bLDblClick     := {|| iif(     Alt_Corte( _aArrTemp[ _oBrowse:nAt, pST2_ITEM_SALDO_PEDIDO ], @_aArrTemp[ _oBrowse:nAt, pST2_ITEM_SALDO_CORTE ] ), _oBrowse:refresh(), Nil ) }
+        _oBrowse:bChange        := {|| ( _nSaldo := 0,  AEval( _aArrTemp, { || _nSaldo += 0 } )  ) }
+        _oBrowse:SetArray( _aArrTemp )
+        _oBrowse:bLine          :=      { ||    ;
+                                                {       ;     
+                                                        _aArrTemp[ _oBrowse:nAt ][ pST2_ITEM_PEDIDO       ], ;
+                                                        _aArrTemp[ _oBrowse:nAt ][ pST2_ITEM_SALDO_PEDIDO ], ;
+                                                        _aArrTemp[ _oBrowse:nAt ][ pST2_ITEM_SALDO_CORTE  ]  ;
+                                                }       ;
+                                        }
+
+        _oBrowse:Align := CONTROL_ALIGN_ALLCLIENT
+        _oBrowse:nScrollType := 1
+
+        _oBrowse:setFocus()
+        _oBrowse:refresh()                                
+
+        ACTIVATE MSDIALOG _oDlg ON INIT EnchoiceBar( _oDlg, { || _lAtu := .T., _oDlg:End() } , { || _lAtu := .F., _oDlg:End() },, ) // _aButtons3)
+
+        If _lAtu
                 _nSoma := 0
-                for _nPos := 1 to len( _aArray[ pST2_ITEMS ] )
-                        _nResult := _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_PEDIDO ] * _nPerc
-                        _nResult /= 100
-                        _nResult := Int( _nResult )
-                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_CORTE ] := _nResult
-                        _nSoma += _nResult
+                for _nPos := 1 to len( _aArrTemp )
+                        if ( _nPointer := AScan( _aArray[ pST2_ITEMS ], { |x| x[ pST2_ITEM_PEDIDO ] == _aArrTemp[ _nPos ][ pST2_ITEM_PEDIDO ] } ) ) > 0
+                                _aArray[ pST2_ITEMS ][ _nPointer ][ pST2_ITEM_SALDO_CORTE  ] := _aArrTemp[ _nPos ][ pST2_ITEM_SALDO_CORTE  ]
+                                _nSoma +=  _aArrTemp[ _nPos ][ pST2_ITEM_SALDO_CORTE  ]
+                        Endif
                 next
 
-                _aArray[ pST2_DESCRICAO ]        := _cDescriProd
-                _aArray[ pST2_SALDO_PEDIDO ]     := _nQuantPedido
-                _aArray[ pST2_SALDO_CORTE ]      := _nQuantCorte
+                _aArray[ pST2_SALDO_CORTE  ]     := _nSoma
                 _aArray[ pST2_MOTIVO_CORTE ]     := _cMotivoCorte
-                _aArray[ pST2_PERCENTUAL_CORTE ] := _nPerc
-                _aArray[ pST2_SALDO_CORTE ]      := _nSoma
+                _aArray[ pST2_PERCENTUAL_CORTE ] := 0
 
-        EndIf
+                _lRetValue := .T.
+        Else
+                _lRetValue := .F.
+        Endif
 
 return _lRetValue
+
+
+****************************************************************************************************************
+Static Function Alt_Corte( _nDisponivel, _nCorte )
+
+Local _oDLG
+Local _oBtnConfirm
+Local _oBtnCancel
+Local _nValor := _nCorte
+Local bSaiu   := .F.
+
+
+        DEFINE MSDIALOG oDLG TITLE "Altera Corte" FROM 000, 000  TO 080, 296 COLORS 0, 16777215 PIXEL
+                @ 008, 002 SAY  "Corte :"                            SIZE 028, 009 OF _oDLG              COLORS 0, 16777215 PIXEL
+                @ 006, 025 MSGET  _nValor    PICT "@E 999,999,999.99" SIZE 123, 010 OF _oDLG Valid _nValor <= _nDisponivel  COLORS 0, 16777215 PIXEL
+                _oBtnCancel  := TButton():New( 021, 021 ,'Cancelar',  oDlg,{|| bSaiu  := .F. , oDLG:End() }  ,50, 011,,,.F.,.T.,.F.,,.F.,,,.F. )                
+                _oBtnConfirm := TButton():New( 021, 095 ,'Confirmar', oDlg,{|| bSaiu  := .T. , oDLG:End() }  ,50, 011,,,.F.,.T.,.F.,,.F.,,,.F. )
+        ACTIVATE MSDIALOG oDLG CENTERED
+
+        If bSaiu
+                _nCorte := _nValor
+        EndIf
+
+Return bSaiu
 
 
 /*=====================================================================================
@@ -942,15 +997,21 @@ local _nQtdCorte  := _aArray[ pST3_QTDE_CORTE ]
 
         // Case tenha sido pressionado o botao de cancelamento da janela.
         If _lRetValue
-                _aArray[ pST3_QTDE_DISP ]  := _nQtdDisp
-                _aArray[ pST3_QTDE_CORTE ] := _nQtdCorte
+//                _aArray[ pST3_QTDE_DISP ]  := _nQtdDisp
+//                _aArray[ pST3_QTDE_CORTE ] := _nQtdCorte
 
-                _nPesoAtual := _aArray[ pST3_QTDE_DISP ] -  _aArray[ pST3_QTDE_CORTE ]
+                _nPesoAtual := _nQtdDisp -  _nQtdCorte
                 _nPesoAtual := _nPesoAtual * _aArray[ pST3_PESO_PRODUTO ]
                 _nPesoAtual := _nPesoAtual * _aArray[ pST3_QTD_CAIXA  ]
 
-                _aArray[ pST3_PESO_ATUAL  ] := _nPesoAtual
-
+                If _nPesoAtual >= _aArray[ pST3_PESO_MINIMO_PRODUTO_TRANSP ]
+                        _aArray[ pST3_QTDE_DISP  ] := _nQtdDisp
+                        _aArray[ pST3_QTDE_CORTE ] := _nQtdCorte
+                        _aArray[ pST3_PESO_ATUAL ] := _nPesoAtual
+                Else
+                        msgAlert("Peso para corte, inferior ao peso minimo !","Atencao")
+                        _lRetValue := .F.
+                Endif
         EndIf
 
 return _lRetValue
