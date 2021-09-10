@@ -10,7 +10,7 @@
 		"files.autoSave": "afterDelay",
 		"totvsLanguageServer.welcomePage": false,
 		"files.exclude": {
-			"gitignore": true,
+			".gitignore": true,
 			".vscode": true,
 			"**/include": true,
 			"**/smartclient_x64": true
