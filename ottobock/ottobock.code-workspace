@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"name": "Projeto OttoBock",
+			"path": "."
+		}
+	],
+	"settings": {
+		"window.zoomLevel": 0,
+		"files.autoSave": "afterDelay",
+		"totvsLanguageServer.welcomePage": false,
+		"files.exclude": {
+			".gitignore": true,
+			".vscode": true,
+			"**/include": true,
+			"smartclient.ini": true,      
+			"**/smartclient_x64": true
+    },
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+	}
+}
