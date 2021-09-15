@@ -133,12 +133,6 @@ private lMsErroAuto := .F.
                     _cMenssage  := _jJsonList["boletos"][ _nPos ]["estadoTituloCobranca"]
                     _dDataBaixa := CTod( StrTran( _jJsonList["boletos"][ _nPos ]["dataMovimento"], ".", "/" ) )
                     _nValor     := _jJsonList["boletos"][ _nPos ]["valorAtual"]
-
-                    If AllTrim( Upper( _jJsonList["boletos"][ _nPos ]["estadoTituloCobranca"] ) ) == 'LIQUIDADO'
-                        _dCredito := CTod( StrTran( _jJsonList["boletos"][ _nPos ]["dataCredito"], ".", "/" ) )
-                    Else
-                        _dCredito := CTod( StrTran( _jJsonList["boletos"][ _nPos ]["dataMovimento"], ".", "/" ) )
-                    Endif
                     
                     _cAliasZPI := GetNextAlias()
 
@@ -163,51 +157,158 @@ private lMsErroAuto := .F.
                     (_cAliasZPI)->( dbGoTop() )
                     if .not. (_cAliasZPI)->( Eof() )
 
-                        Conout( "Processando Boleto Numero [" + _cNossoNum + "]" )
+                        If AllTrim( Upper( _jJsonList["boletos"][ _nPos ]["estadoTituloCobranca"] ) ) == 'LIQUIDADO'
 
-                        _aBaixa := {    {"E1_PREFIXO",   (_cAliasZPI)->PREFIXO,         Nil },;
-                                        {"E1_NUM",       (_cAliasZPI)->NUM,             Nil },;
-                                        {"E1_TIPO",      (_cAliasZPI)->TIPO,            Nil },;
-                                        {"E1_CLIENTE",   (_cAliasZPI)->CLIENTE,         Nil },;
-                                        {"E1_LOJA" ,     (_cAliasZPI)->LOJA,            Nil },;
-                                        {"E1_NATUREZ",   (_cAliasZPI)->NATUREZA,        Nil },;
-                                        {"E1_PARCELA",   (_cAliasZPI)->PARCELA,         Nil },;
-                                        {"AUTMOTBX",     "NOR",                         Nil },;
-                                        {"CBANCO",       (_cAliasZPI)->BANCO,           Nil },;
-                                        {"CAGENCIA",     (_cAliasZPI)->AGENCIA ,        Nil },;
-                                        {"CCONTA",       (_cAliasZPI)->CONTA,           Nil },;
-                                        {"AUTDTBAIXA",   _dDataBaixa,                   Nil },;
-                                        {"AUTDTCREDITO", _dCredito,                     Nil },;
-                                        {"AUTHIST",      "BAIXA TESTE API AUTOMATICA",  Nil },;
-                                        {"AUTVALREC",    _nValor,                       Nil } ;
-                                    }
+                            // 
+                            // Baixas realizadas somente em titulos LIQUIDADOS
+                            // 
+                            _dCredito := CTod( StrTran( _jJsonList["boletos"][ _nPos ]["dataCredito"], ".", "/" ) )
 
-                        lMsErroAuto := .F.
-                        MSExecAuto({|x,y,b,a| Fina070(x,y)}, _aBaixa, 3) 
+                            Conout( "Processando Boleto Numero [" + _cNossoNum + "]" )
 
-                        If lMsErroAuto
-                            // MostraErro()
-                            Conout( "Boleto Numero [" + _cNossoNum + "] erro no momento da baixa." )
+                            _aBaixa := {    {"E1_PREFIXO",   (_cAliasZPI)->PREFIXO,         Nil },;
+                                            {"E1_NUM",       (_cAliasZPI)->NUM,             Nil },;
+                                            {"E1_TIPO",      (_cAliasZPI)->TIPO,            Nil },;
+                                            {"E1_CLIENTE",   (_cAliasZPI)->CLIENTE,         Nil },;
+                                            {"E1_LOJA" ,     (_cAliasZPI)->LOJA,            Nil },;
+                                            {"E1_NATUREZ",   (_cAliasZPI)->NATUREZA,        Nil },;
+                                            {"E1_PARCELA",   (_cAliasZPI)->PARCELA,         Nil },;
+                                            {"AUTMOTBX",     "NOR",                         Nil },;
+                                            {"CBANCO",       (_cAliasZPI)->BANCO,           Nil },;
+                                            {"CAGENCIA",     (_cAliasZPI)->AGENCIA ,        Nil },;
+                                            {"CCONTA",       (_cAliasZPI)->CONTA,           Nil },;
+                                            {"AUTDTBAIXA",   _dDataBaixa,                   Nil },;
+                                            {"AUTDTCREDITO", _dCredito,                     Nil },;
+                                            {"AUTHIST",      "BAIXA TESTE API AUTOMATICA",  Nil },;
+                                            {"AUTVALREC",    _nValor,                       Nil } ;
+                                        }
 
-                            (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
-                            RecLock( "ZPI" ,.F.)
-                                ZPI->ZPI_DTREC	:= Date()
-                                ZPI->ZPI_HRREC	:= Time()
-                                ZPI->ZPI_STBAIX	:= " Erro na baixa do titulo "
-                            ZPI->(dbUnlock())
+                            lMsErroAuto := .F.
+                            MSExecAuto({|x,y,b,a| Fina070(x,y)}, _aBaixa, 3) 
 
-                        Else
+                            If lMsErroAuto
+                                // MostraErro()
+                                Conout( "Boleto Numero [" + _cNossoNum + "] erro no momento da baixa." )
 
-                            (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
-                            RecLock( "ZPI" ,.F.)
-                                ZPI->ZPI_STREC	:= _cMenssage
-                                ZPI->ZPI_DTREC	:= Date()
-                                ZPI->ZPI_HRREC	:= Time()
-                                ZPI->ZPI_DTBAIX	:= _dDataBaixa
-                                ZPI->ZPI_STBAIX	:= " Registro Baixado Corretamente "
-                            ZPI->(dbUnlock())
+                                (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
+                                RecLock( "ZPI" ,.F.)
+                                    ZPI->ZPI_DTREC	:= Date()
+                                    ZPI->ZPI_HRREC	:= Time()
+                                    ZPI->ZPI_STBAIX	:= " Erro na baixa do titulo "
+                                ZPI->(dbUnlock())
 
-                            Conout( "Boleto Numero [" + _cNossoNum + "] baixado corretaente." )
+                            Else
+
+                                (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
+                                RecLock( "ZPI" ,.F.)
+                                    ZPI->ZPI_STREC	:= _cMenssage
+                                    ZPI->ZPI_DTREC	:= Date()
+                                    ZPI->ZPI_HRREC	:= Time()
+                                    ZPI->ZPI_DTBAIX	:= _dDataBaixa
+                                    ZPI->ZPI_STBAIX	:= " Registro Baixado Corretamente "
+                                ZPI->(dbUnlock())
+
+                                Conout( "Boleto Numero [" + _cNossoNum + "] baixado corretaente." )
+                            Endif
+
+                        ElseIf AllTrim( Upper( _jJsonList["boletos"][ _nPos ]["estadoTituloCobranca"] ) ) == 'BAIXADO'
+
+                            // 
+                            // Para os titulos PROTESTADOS deve-se realizar a transferencia pra a carteira "0"
+                            // 
+                            _dCredito := CTod( StrTran( _jJsonList["boletos"][ _nPos ]["dataMovimento"], ".", "/" ) )
+
+                            _aBaixa := {    {"E1_PREFIXO",   (_cAliasZPI)->PREFIXO,         Nil },;
+                                            {"E1_NUM",       (_cAliasZPI)->NUM,             Nil },;
+                                            {"E1_PARCELA",   (_cAliasZPI)->PARCELA,         Nil },;                                            
+                                            {"E1_TIPO",      (_cAliasZPI)->TIPO,            Nil },;
+                                            {"AUTDATAMOV",   _dCredito,                     Nil },;
+                                            {"CBANCO",       "",                            Nil },;
+                                            {"CAGENCIA",     "",                            Nil },;
+                                            {"CCONTA",       "",                            Nil },;
+                                            {"AUTSITUACA",   "0",                           Nil },;
+                                            {"AUTNUMBCO",    "",                            Nil },;
+                                            {"AUTGRVFI2",    .T.,                           Nil } ;
+                                        }
+
+                            lMsErroAuto := .F.
+                            MsExecAuto({ |x, y| FINA060( x, y)}, 2, _aBaixa )
+
+                            If lMsErroAuto
+                                // MostraErro()
+                                Conout( "Boleto Numero [" + _cNossoNum + "] erro no momento da trasnferencia para a certeira." )
+
+                                (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
+                                RecLock( "ZPI" ,.F.)
+                                    ZPI->ZPI_DTREC	:= Date()
+                                    ZPI->ZPI_HRREC	:= Time()
+                                    ZPI->ZPI_STBAIX	:= "Erro na transferencia para a carteira"
+                                ZPI->(dbUnlock())
+
+                            Else
+
+                                (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
+                                RecLock( "ZPI" ,.F.)
+                                    ZPI->ZPI_STREC	:= _cMenssage
+                                    ZPI->ZPI_DTREC	:= Date()
+                                    ZPI->ZPI_HRREC	:= Time()
+                                    ZPI->ZPI_DTBAIX	:= _dDataBaixa
+                                    ZPI->ZPI_STBAIX	:= "Transferencia realizada com sucesso"
+                                ZPI->(dbUnlock())
+
+                                Conout( "Boleto Numero [" + _cNossoNum + "] transferido corretaente." )
+                            Endif
+
+
+                        ElseIf AllTrim( Upper( _jJsonList["boletos"][ _nPos ]["estadoTituloCobranca"] ) ) == 'PROTESTADO'
+
+                            // 
+                            // Para os titulos PROTESTADOS deve-se realizar a transferencia pra a carteira "F"
+                            // 
+
+                            _dCredito := CTod( StrTran( _jJsonList["boletos"][ _nPos ]["dataMovimento"], ".", "/" ) )
+
+                            _aBaixa := {    {"E1_PREFIXO",   (_cAliasZPI)->PREFIXO,         Nil },;
+                                            {"E1_NUM",       (_cAliasZPI)->NUM,             Nil },;
+                                            {"E1_PARCELA",   (_cAliasZPI)->PARCELA,         Nil },;                                            
+                                            {"E1_TIPO",      (_cAliasZPI)->TIPO,            Nil },;
+                                            {"AUTDATAMOV",   _dCredito,                     Nil },;
+                                            {"CBANCO",       (_cAliasZPI)->BANCO,           Nil },;
+                                            {"CAGENCIA",     (_cAliasZPI)->AGENCIA,         Nil },;
+                                            {"CCONTA",       (_cAliasZPI)->CONTA,           Nil },;
+                                            {"AUTSITUACA",   "F",                           Nil },;
+                                            {"AUTNUMBCO",    Alltrim(_cNossoNum),           Nil },;
+                                            {"AUTGRVFI2",    .T.,                           Nil } ;
+                                        }
+
+                            lMsErroAuto := .F.
+                            MsExecAuto({ |x, y| FINA060( x, y)}, 2, _aBaixa )
+
+                            If lMsErroAuto
+                                // MostraErro()
+                                Conout( "Boleto Numero [" + _cNossoNum + "] erro no momento da trasnferencia para a certeira." )
+
+                                (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
+                                RecLock( "ZPI" ,.F.)
+                                    ZPI->ZPI_DTREC	:= Date()
+                                    ZPI->ZPI_HRREC	:= Time()
+                                    ZPI->ZPI_STBAIX	:= "Erro na transferencia para a carteira"
+                                ZPI->(dbUnlock())
+
+                            Else
+
+                                (_cAliasZPI)->( dbGoTo( (_cAliasZPI)->RECNO ) )
+                                RecLock( "ZPI" ,.F.)
+                                    ZPI->ZPI_STREC	:= _cMenssage
+                                    ZPI->ZPI_DTREC	:= Date()
+                                    ZPI->ZPI_HRREC	:= Time()
+                                    ZPI->ZPI_DTBAIX	:= _dDataBaixa
+                                    ZPI->ZPI_STBAIX	:= "Transferencia realizada com sucesso"
+                                ZPI->(dbUnlock())
+
+                                Conout( "Boleto Numero [" + _cNossoNum + "] enviado para a carteira de protesto." )
+                            Endif
+
                         Endif
 
                     EndIF
