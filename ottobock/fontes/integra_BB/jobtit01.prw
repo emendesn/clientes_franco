@@ -19,7 +19,7 @@ local _cID
 local _cURL
 local _aHeader
 local _cParms
-local _cRetGet
+local _cHeaderGet
 local _cRetPost
 local _cURLBody
 local _aHeaBody
@@ -46,21 +46,16 @@ local lHomologa     := .F.
 private lMsErroAuto := .F.
 
 
-    PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SM0", "SA1", "SE1", "SE9", "SEE", "ZPI", "SEA" MODULO "FIN"
+   // PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SM0", "SA1", "SE1", "SE9", "SEE", "ZPI", "SEA" MODULO "FIN"
 
 
-    _cQuery := " SELECT ZPI.ZPI_BANCO, ZPI.ZPI_DTREG REGISTRO, ZPI_NROCON CONVENIO,"                                        + Chr(13)+Chr(10)
-    _cQuery += "        SEE.EE_OPER, SEE.EE_AGENCIA AGENCIA, SEE.EE_CONTA CONTA "                                           + Chr(13)+Chr(10)    
-	_cQuery += "    FROM " + RetSqlName("ZPI") + " ZPI "												                    + Chr(13)+Chr(10)
-    _cQuery += "    LEFT JOIN " + RetSqlName("SE1") + " SE1 ON  "                                                           + Chr(13)+Chr(10)
-    _cQuery += "              ZPI.ZPI_PREFIX = SE1.E1_PREFIXO and ZPI.ZPI_NUM = SE1.E1_NUM "                                + Chr(13)+Chr(10)
-    _cQuery += "              AND ZPI.ZPI_NUM = SE1.E1_NUM "                                                                + Chr(13)+Chr(10)
-    _cQuery += "    LEFT JOIN " + RetSqlName("SEE") + " SEE ON ZPI.ZPI_BANCO = SEE.EE_CODIGO "                              + Chr(13)+Chr(10)
-	_cQuery += " WHERE ZPI.ZPI_DTBAIX = ' ' "						                                                        + Chr(13)+Chr(10)
-    _cQuery += "       AND ZPI.ZPI_DTREG <> ' ' "						                                                    + Chr(13)+Chr(10)
-    _cQuery += "       AND ZPI.ZPI_BANCO = '001' "						                                                    + Chr(13)+Chr(10)    
-    _cQuery += "       AND ZPI.D_E_L_E_T_ <> '*' "						                                                    + Chr(13)+Chr(10)
-	_cQuery += " ORDER BY ZPI.ZPI_DTREG "                                                                                   + Chr(13)+Chr(10)
+    _cQuery := " SELECT ZPI.ZPI_AGEN AGENCIA, ZPI.ZPI_CONTA CONTA "                                                     + Chr(13)+Chr(10)
+	_cQuery += "   FROM " + RetSqlName("ZPI") + " ZPI "												                    + Chr(13)+Chr(10)
+	_cQuery += "  WHERE ZPI.D_E_L_E_T_ = ' ' "						                                                    + Chr(13)+Chr(10)
+    _cQuery += "        AND ZPI.ZPI_DTBAIX = ' ' "						                                                + Chr(13)+Chr(10)
+    _cQuery += "        AND ZPI.ZPI_DTREG <> ' ' "						                                                + Chr(13)+Chr(10)    
+    _cQuery += "  GROUP BY ZPI.ZPI_AGEN, ZPI.ZPI_CONTA "						                                        + Chr(13)+Chr(10)
+	_cQuery += "  ORDER BY ZPI.ZPI_AGEN, ZPI.ZPI_CONTA "                                                                + Chr(13)+Chr(10)
 
     _cQuery := ChangeQuery( _cQuery )
 
@@ -72,11 +67,14 @@ private lMsErroAuto := .F.
         if lHomologa
 
             _cKey           := "d27b977903ffab701360e17d00050f56b9e1a5b0"
-            _cID            := "Basic ZXlKcFpDSTZJakk1T0RrNFpESXRaV0UyTkMwME5HWXhMU0lzSW1OdlpHbG5iMUIxWW14cFkyRmtiM0lpT2pBc0ltTnZaR2xuYjFOdlpuUjNZWEpsSWpveE5Ea3dNQ3dpYzJWeGRXVnVZMmxoYkVsdWMzUmhiR0ZqWVc4aU9qRjk6ZXlKcFpDSTZJakV4WVRFaUxDSmpiMlJwWjI5UWRXSnNhV05oWkc5eUlqb3dMQ0pqYjJScFoyOVRiMlowZDJGeVpTSTZNVFE1TURBc0luTmxjWFZsYm1OcFlXeEpibk4wWVd4aFkyRnZJam94TENKelpYRjFaVzVqYVdGc1EzSmxaR1Z1WTJsaGJDSTZNU3dpWVcxaWFXVnVkR1VpT2lKb2IyMXZiRzluWVdOaGJ5SXNJbWxoZENJNk1UWXhPRFE1TVRRME1UazVPWDA="                    
-            _cURL           := AllTrim( GetMV("AP_URLBTH") ) // "https://oauth.bb.com.br/oauth/token" 
+
+// ED            _cID            := "Basic ZXlKcFpDSTZJakk1T0RrNFpESXRaV0UyTkMwME5HWXhMU0lzSW1OdlpHbG5iMUIxWW14cFkyRmtiM0lpT2pBc0ltTnZaR2xuYjFOdlpuUjNZWEpsSWpveE5Ea3dNQ3dpYzJWeGRXVnVZMmxoYkVsdWMzUmhiR0ZqWVc4aU9qRjk6ZXlKcFpDSTZJakV4WVRFaUxDSmpiMlJwWjI5UWRXSnNhV05oWkc5eUlqb3dMQ0pqYjJScFoyOVRiMlowZDJGeVpTSTZNVFE1TURBc0luTmxjWFZsYm1OcFlXeEpibk4wWVd4aFkyRnZJam94TENKelpYRjFaVzVqYVdGc1EzSmxaR1Z1WTJsaGJDSTZNU3dpWVcxaWFXVnVkR1VpT2lKb2IyMXZiRzluWVdOaGJ5SXNJbWxoZENJNk1UWXhPRFE1TVRRME1UazVPWDA="                    
+            _cID            := "Basic ZXlKcFpDSTZJbVkyWVRWbU1qY3RaR1V5TkMwME1Ea2lMQ0pqYjJScFoyOVFkV0pzYVdOaFpHOXlJam93TENKamIyUnBaMjlUYjJaMGQyRnlaU0k2TVRReE16RXNJbk5sY1hWbGJtTnBZV3hKYm5OMFlXeGhZMkZ2SWpveGZROmV5SnBaQ0k2SWlJc0ltTnZaR2xuYjFCMVlteHBZMkZrYjNJaU9qQXNJbU52WkdsbmIxTnZablIzWVhKbElqb3hOREV6TVN3aWMyVnhkV1Z1WTJsaGJFbHVjM1JoYkdGallXOGlPakVzSW5ObGNYVmxibU5wWVd4RGNtVmtaVzVqYVdGc0lqb3hMQ0poYldKcFpXNTBaU0k2SW5CeWIyUjFZMkZ2SWl3aWFXRjBJam94TmpJeE1qY3hPREE0T0RBNWZR"
+            _cURL           := "https://oauth.sandbox.bb.com.br/oauth/token"
+
             _aHeader        := {}
             _cParms         := ""
-            _cRetGet        := ""
+            _cHeaderGet     := ""
             _cRetPost       := ""
 
             _cURLBody       := "https://api.bb.com.br/cobrancas/v2/boletos?gw-dev-app-key=" + _cKey
@@ -93,11 +91,14 @@ private lMsErroAuto := .F.
         else
 
             _cKey           := "7091a08b05ffbed01360e18120050756b961a5b0"
-            _cID            := "Basic ZXlKcFpDSTZJbVkyWVRWbU1qY3RaR1V5TkMwME1Ea2lMQ0pqYjJScFoyOVFkV0pzYVdOaFpHOXlJam93TENKamIyUnBaMjlUYjJaMGQyRnlaU0k2TVRReE16RXNJbk5sY1hWbGJtTnBZV3hKYm5OMFlXeGhZMkZ2SWpveGZROmV5SnBaQ0k2SWlJc0ltTnZaR2xuYjFCMVlteHBZMkZrYjNJaU9qQXNJbU52WkdsbmIxTnZablIzWVhKbElqb3hOREV6TVN3aWMyVnhkV1Z1WTJsaGJFbHVjM1JoYkdGallXOGlPakVzSW5ObGNYVmxibU5wWVd4RGNtVmtaVzVqYVdGc0lqb3hMQ0poYldKcFpXNTBaU0k2SW5CeWIyUjFZMkZ2SWl3aWFXRjBJam94TmpJeE1qY3hPREE0T0RBNWZR"            
-            _cURL           := AllTrim( GetMV("AP_URLBRP") ) + _cKey  // AllTrim( GetMV("AP_URLBTP") )
+// ED         _cID            := "Basic ZXlKcFpDSTZJbVkyWVRWbU1qY3RaR1V5TkMwME1Ea2lMQ0pqYjJScFoyOVFkV0pzYVdOaFpHOXlJam93TENKamIyUnBaMjlUYjJaMGQyRnlaU0k2TVRReE16RXNJbk5sY1hWbGJtTnBZV3hKYm5OMFlXeGhZMkZ2SWpveGZROmV5SnBaQ0k2SWlJc0ltTnZaR2xuYjFCMVlteHBZMkZrYjNJaU9qQXNJbU52WkdsbmIxTnZablIzWVhKbElqb3hOREV6TVN3aWMyVnhkV1Z1WTJsaGJFbHVjM1JoYkdGallXOGlPakVzSW5ObGNYVmxibU5wWVd4RGNtVmtaVzVqYVdGc0lqb3hMQ0poYldKcFpXNTBaU0k2SW5CeWIyUjFZMkZ2SWl3aWFXRjBJam94TmpJeE1qY3hPREE0T0RBNWZR"            
+// ED 2            _cID            := "Basic ZXlKcFpDSTZJakk1T0RrNFpESXRaV0UyTkMwME5HWXhMU0lzSW1OdlpHbG5iMUIxWW14cFkyRmtiM0lpT2pBc0ltTnZaR2xuYjFOdlpuUjNZWEpsSWpveE5Ea3dNQ3dpYzJWeGRXVnVZMmxoYkVsdWMzUmhiR0ZqWVc4aU9qRjk6ZXlKcFpDSTZJakV4WVRFaUxDSmpiMlJwWjI5UWRXSnNhV05oWkc5eUlqb3dMQ0pqYjJScFoyOVRiMlowZDJGeVpTSTZNVFE1TURBc0luTmxjWFZsYm1OcFlXeEpibk4wWVd4aFkyRnZJam94TENKelpYRjFaVzVqYVdGc1EzSmxaR1Z1WTJsaGJDSTZNU3dpWVcxaWFXVnVkR1VpT2lKb2IyMXZiRzluWVdOaGJ5SXNJbWxoZENJNk1UWXhPRFE1TVRRME1UazVPWDA="
+            _cID            := "Basic ZXlKcFpDSTZJbVkyWVRWbU1qY3RaR1V5TkMwME1Ea2lMQ0pqYjJScFoyOVFkV0pzYVdOaFpHOXlJam93TENKamIyUnBaMjlUYjJaMGQyRnlaU0k2TVRReE16RXNJbk5sY1hWbGJtTnBZV3hKYm5OMFlXeGhZMkZ2SWpveGZROmV5SnBaQ0k2SWlJc0ltTnZaR2xuYjFCMVlteHBZMkZrYjNJaU9qQXNJbU52WkdsbmIxTnZablIzWVhKbElqb3hOREV6TVN3aWMyVnhkV1Z1WTJsaGJFbHVjM1JoYkdGallXOGlPakVzSW5ObGNYVmxibU5wWVd4RGNtVmtaVzVqYVdGc0lqb3hMQ0poYldKcFpXNTBaU0k2SW5CeWIyUjFZMkZ2SWl3aWFXRjBJam94TmpJeE1qY3hPREE0T0RBNWZR"
+// ED            _cURL           := AllTrim( GetMV("AP_URLBRP") ) + _cKey  // AllTrim( GetMV("AP_URLBTP") )
+            _cURL           := "https://oauth.bb.com.br/oauth/token"
             _aHeader        := {}
             _cParms         := ""
-            _cRetGet        := ""
+            _cHeaderGet     := ""
             _cRetPost       := ""
 
             _cURLBody       := "https://api.bb.com.br/cobrancas/v2/boletos?gw-dev-app-key=" + _cKey
@@ -121,10 +122,13 @@ private lMsErroAuto := .F.
         Aadd( _aHeader, "Authorization: " +  _cID )
         Aadd( _aHeader, "Content-Type: application/x-www-form-urlencoded")
 
+        /// Body Campos
         _cParms := "grant_type=client_credentials"
         _cParms += "&scope=cobrancas.boletos-requisicao cobrancas.boletos-info"
+        //_cParms += "&scope=cobrancas.boletos-info cobrancas.boletos-requisicao"
 
-        _cRetPost := HTTPPost( _cURL, /*cGetParms*/, _cParms, /*nTimeOut*/, _aHeader, @_cRetGet)
+
+        _cRetPost := HTTPPost( _cURL, /*cGetParms*/, _cParms, /*nTimeOut*/, _aHeader, @_cHeaderGet)
 
         //Transforma o retorno em um JSON
         jJsonToken := JsonObject():New()
@@ -134,17 +138,22 @@ private lMsErroAuto := .F.
         // Body
         AAdd( _aHeaBody, "Content-Type: application/json")	
         Aadd( _aHeaBody, "Authorization: Bearer "+Escape(jJsonToken["access_token"] ) )
+//        Aadd( _aHeaBody, "Accept: */*")
+//        Aadd( _aHeaBody, "Connection: keep-alive")
 
-        _cParms := "&numeroConvenio|" + _cConvenio
-        _cParms += "&agenciaBeneficiario|" + _cAgencia
-        _cParms += "&contaBeneficiario|" + _cConta
-        _cParms += '&indicadorSituacao|"B"'
-        _cParms += "&indice|300"
-        _cParms += "&codigoEstadoTituloCobranca|7"
-        _cParms += "&dataInicioMovimento|" + _cDataIni
-        _cParms += "&dataFimMovimento|"  + _cDataFim
+        // _cParms := "gw-dev-app-key=" + _cKey
+        _cParms := "numeroConvenio=" + _cConvenio
+        _cParms += "&agenciaBeneficiario=" + _cAgencia
+        _cParms += "&contaBeneficiario=" + _cConta
+        _cParms += '&indicadorSituacao="B"'
+        _cParms += "&indice=300"
+        _cParms += "&codigoEstadoTituloCobranca=7"
+        _cParms += "&dataInicioMovimento=" + _cDataIni
+        _cParms += "&dataFimMovimento="  + _cDataFim
 
-        _cRetPostBody := HttpPost( _cURLBody ,/*cGetParms*/, _cParms,/*nTimeOut*/, _aHeader, @_cRetGetBody)
+        cRetGet := HTTPGet( _cURLBody, _cParms,/*nTimeOut*/, _aHeaBody, @_cRetGetBody)
+
+        _cRetPostBody := HttpPost( _cURLBody ,/*cGetParms*/, _cParms,/*nTimeOut*/, _aHeaBody, @_cRetGetBody)
 
 
 
