@@ -1,0 +1,216 @@
+IFDEF SPANISH
+   #define STR0001 "S.I.s"
+   #define STR0002 "P.O.s"
+   #define STR0003 "G.I.s"
+   #define STR0004 "D.I.s"
+   #define STR0005 "Todas"
+   #define STR0006 "Em aberto "
+   #define STR0007 "Entregues '
+   #define STR0008 "PESQUISANDO "
+   #define STR0009 " - AGUARDE..."
+   #define STR0010 "Pesquisar"
+   #define STR0011 "Visual"
+   #define STR0012 "Inclui"
+   #define STR0013 "Altera"
+   #define STR0014 "Exclui"
+   #define STR0015 "Geraáao"
+   #define STR0016 "Pesquisa de Processos"
+   #define STR0017 "Gerador de Consultas"
+   #define STR0018 "N£mero da Coluna Inv†lido "
+   #define STR0019 "Informaá∆o"
+   #define STR0020 "Nome do Campo n∆o informado"
+   #define STR0021 'Colunas "Ordenar ?","Salta Quebr?","Total Quebr" e "Total Geral" diferentes de "S" (Sim) e "N" (Nao)'
+   #define STR0022 'Colunas "Imprimir ?" diferentes de "S" (Sim), "N" (Nao) e "Q" (somente na quebra)'
+   #define STR0023 "N£mero da Coluna Inv†lido"
+   #define STR0024 "Pr¢xima Coluna deve ser "
+   #define STR0025 "Campo "
+   #define STR0026 "n∆o encontrado no dicion†rio de campos"
+   #define STR0027 "Intervalo final menor que inicial"
+   #define STR0028 'Conte£do deve ser "S" (Sim) ou "N" (N∆o)'
+   #define STR0029 'Conte£do deve ser "S" (Sim), "N" (N∆o) ou "Q" (somente na quebra)'
+   #define STR0030 'Conte£do deve ser "E" (Esquerda), "D" (Direita) ou "C" (Centro)'
+   #define STR0031 ',cPict) # 0'Data Inicial n∆o Informada'
+   #define STR0032 'Data Final n∆o Informada'
+   #define STR0033 'Data Inicial maior que data final'
+   #define STR0034 "Intervalo de datas p/ processos entregues n∆o informado"
+   #define STR0035 "Data deve ser informada apenas p/ processos entregues"
+   #define STR0036 "Selecao de Status de "
+   #define STR0037 "Gera Arquivo"
+   #define STR0038 "Imprime"
+   #define STR0039 "Nenhum Campo foi selecionado"
+   #define STR0040 'Status'
+   #define STR0041 "N∆o foi poss°vel abrir o arquivo tempor†rio"
+   #define STR0042 "Ordenando arquivo de trabalho..."
+   #define STR0043 "Formatando campos selecionados..."
+   #define STR0044 "Processamento Cancelado"
+   #define STR0045 "Pesquisando S.I.s"
+   #define STR0046 "Pesquisando P.O.s"
+   #define STR0047 "Pesquisando L.I.s"
+   #define STR0048 "Pesquisando D.I.s em aberto"
+   #define STR0049 "Pesquisando D.I.s entregues"
+   #define STR0050 "SISTEMA SERµ ENCERRADO"
+   #define STR0051 "Criando Campo: "
+   #define STR0052 "Origem n∆o encontrada para o campo "
+   #define STR0053 "n∆o existe no Arquivo"
+   #define STR0054 "Arquivo indeterminado para o campo/fase "
+   #define STR0055 'Ag. Guia'
+   #define STR0056 "R$"
+   #define STR0057 "VIA NAO CADASTRADA"
+   #define STR0058 "IMPORTADOR NAO CADASTRADO"
+   #define STR0059 "COND. PAGTO NAO CADASTRADA"
+   #define STR0060 "Nacionalizaá∆o ainda n∆o dispon°vel no SIGAEIC"
+   #define STR0061 "PORTO NAO CADASTRADO"
+   #define STR0062 "Emite um relatÛrio com os campos selecionados pelo usu·rio,"
+   #define STR0063 'e que est„o aparecendo no "Browse".'
+   #define STR0064 "Zebrado"
+   #define STR0065 "Administracao"
+   #define STR0066 "REGISTRO(S)"
+   #define STR0067 "CANCELADO PELO OPERADOR"
+   #define STR0068 "Pagina..:      001"
+   #define STR0069 "Emissao.: "
+   #define STR0070 "Sim"
+#ELSE
+   #IFDEF ENGLISH
+      #define STR0001 "S.I.s"
+      #define STR0002 "P.O.s"
+      #define STR0003 "G.I.s"
+      #define STR0004 "D.I.s"
+      #define STR0005 "Todas"
+      #define STR0006 "Em aberto "
+      #define STR0007 "Entregues '
+      #define STR0008 "PESQUISANDO "
+      #define STR0009 " - AGUARDE..."
+      #define STR0010 "Pesquisar"
+      #define STR0011 "Visual"
+      #define STR0012 "Inclui"
+      #define STR0013 "Altera"
+      #define STR0014 "Exclui"
+      #define STR0015 "Geraáao"
+      #define STR0016 "Pesquisa de Processos"
+      #define STR0017 "Gerador de Consultas"
+      #define STR0018 "N£mero da Coluna Inv†lido "
+      #define STR0019 "Informaá∆o"
+      #define STR0020 "Nome do Campo n∆o informado"
+      #define STR0021 'Colunas "Ordenar ?","Salta Quebr?","Total Quebr" e "Total Geral" diferentes de "S" (Sim) e "N" (Nao)'
+      #define STR0022 'Colunas "Imprimir ?" diferentes de "S" (Sim), "N" (Nao) e "Q" (somente na quebra)'
+      #define STR0023 "N£mero da Coluna Inv†lido"
+      #define STR0024 "Pr¢xima Coluna deve ser "
+      #define STR0025 "Campo "
+      #define STR0026 "n∆o encontrado no dicion†rio de campos"
+      #define STR0027 "Intervalo final menor que inicial"
+      #define STR0028 'Conte£do deve ser "S" (Sim) ou "N" (N∆o)'
+      #define STR0029 'Conte£do deve ser "S" (Sim), "N" (N∆o) ou "Q" (somente na quebra)'
+      #define STR0030 'Conte£do deve ser "E" (Esquerda), "D" (Direita) ou "C" (Centro)'
+      #define STR0031 ',cPict) # 0'Data Inicial n∆o Informada'
+      #define STR0032 'Data Final n∆o Informada'
+      #define STR0033 'Data Inicial maior que data final'
+      #define STR0034 "Intervalo de datas p/ processos entregues n∆o informado"
+      #define STR0035 "Data deve ser informada apenas p/ processos entregues"
+      #define STR0036 "Selecao de Status de "
+      #define STR0037 "Gera Arquivo"
+      #define STR0038 "Imprime"
+      #define STR0039 "Nenhum Campo foi selecionado"
+      #define STR0040 'Status'
+      #define STR0041 "N∆o foi poss°vel abrir o arquivo tempor†rio"
+      #define STR0042 "Ordenando arquivo de trabalho..."
+      #define STR0043 "Formatando campos selecionados..."
+      #define STR0044 "Processamento Cancelado"
+      #define STR0045 "Pesquisando S.I.s"
+      #define STR0046 "Pesquisando P.O.s"
+      #define STR0047 "Pesquisando L.I.s"
+      #define STR0048 "Pesquisando D.I.s em aberto"
+      #define STR0049 "Pesquisando D.I.s entregues"
+      #define STR0050 "SISTEMA SERµ ENCERRADO"
+      #define STR0051 "Criando Campo: "
+      #define STR0052 "Origem n∆o encontrada para o campo "
+      #define STR0053 "n∆o existe no Arquivo"
+      #define STR0054 "Arquivo indeterminado para o campo/fase "
+      #define STR0055 'Ag. Guia'
+      #define STR0056 "R$"
+      #define STR0057 "VIA NAO CADASTRADA"
+      #define STR0058 "IMPORTADOR NAO CADASTRADO"
+      #define STR0059 "COND. PAGTO NAO CADASTRADA"
+      #define STR0060 "Nacionalizaá∆o ainda n∆o dispon°vel no SIGAEIC"
+      #define STR0061 "PORTO NAO CADASTRADO"
+      #define STR0062 "Emite um relatÛrio com os campos selecionados pelo usu·rio,"
+      #define STR0063 'e que est„o aparecendo no "Browse".'
+      #define STR0064 "Zebrado"
+      #define STR0065 "Administracao"
+      #define STR0066 "REGISTRO(S)"
+      #define STR0067 "CANCELADO PELO OPERADOR"
+      #define STR0068 "Pagina..:      001"
+      #define STR0069 "Emissao.: "
+      #define STR0070 "Sim"
+   #ELSE
+      #define STR0001 "S.I.s"
+      #define STR0002 "P.O.s"
+      #define STR0003 "G.I.s"
+      #define STR0004 "D.I.s"
+      #define STR0005 "Todas"
+      #define STR0006 "Em aberto "
+      #define STR0007 "Entregues '
+      #define STR0008 "PESQUISANDO "
+      #define STR0009 " - AGUARDE..."
+      #define STR0010 "Pesquisar"
+      #define STR0011 "Visual"
+      #define STR0012 "Inclui"
+      #define STR0013 "Altera"
+      #define STR0014 "Exclui"
+      #define STR0015 "Geraáao"
+      #define STR0016 "Pesquisa de Processos"
+      #define STR0017 "Gerador de Consultas"
+      #define STR0018 "N£mero da Coluna Inv†lido "
+      #define STR0019 "Informaá∆o"
+      #define STR0020 "Nome do Campo n∆o informado"
+      #define STR0021 'Colunas "Ordenar ?","Salta Quebr?","Total Quebr" e "Total Geral" diferentes de "S" (Sim) e "N" (Nao)'
+      #define STR0022 'Colunas "Imprimir ?" diferentes de "S" (Sim), "N" (Nao) e "Q" (somente na quebra)'
+      #define STR0023 "N£mero da Coluna Inv†lido"
+      #define STR0024 "Pr¢xima Coluna deve ser "
+      #define STR0025 "Campo "
+      #define STR0026 "n∆o encontrado no dicion†rio de campos"
+      #define STR0027 "Intervalo final menor que inicial"
+      #define STR0028 'Conte£do deve ser "S" (Sim) ou "N" (N∆o)'
+      #define STR0029 'Conte£do deve ser "S" (Sim), "N" (N∆o) ou "Q" (somente na quebra)'
+      #define STR0030 'Conte£do deve ser "E" (Esquerda), "D" (Direita) ou "C" (Centro)'
+      #define STR0031 ',cPict) # 0'Data Inicial n∆o Informada'
+      #define STR0032 'Data Final n∆o Informada'
+      #define STR0033 'Data Inicial maior que data final'
+      #define STR0034 "Intervalo de datas p/ processos entregues n∆o informado"
+      #define STR0035 "Data deve ser informada apenas p/ processos entregues"
+      #define STR0036 "Selecao de Status de "
+      #define STR0037 "Gera Arquivo"
+      #define STR0038 "Imprime"
+      #define STR0039 "Nenhum Campo foi selecionado"
+      #define STR0040 'Status'
+      #define STR0041 "N∆o foi poss°vel abrir o arquivo tempor†rio"
+      #define STR0042 "Ordenando arquivo de trabalho..."
+      #define STR0043 "Formatando campos selecionados..."
+      #define STR0044 "Processamento Cancelado"
+      #define STR0045 "Pesquisando S.I.s"
+      #define STR0046 "Pesquisando P.O.s"
+      #define STR0047 "Pesquisando L.I.s"
+      #define STR0048 "Pesquisando D.I.s em aberto"
+      #define STR0049 "Pesquisando D.I.s entregues"
+      #define STR0050 "SISTEMA SERµ ENCERRADO"
+      #define STR0051 "Criando Campo: "
+      #define STR0052 "Origem n∆o encontrada para o campo "
+      #define STR0053 "n∆o existe no Arquivo"
+      #define STR0054 "Arquivo indeterminado para o campo/fase "
+      #define STR0055 'Ag. Guia'
+      #define STR0056 "R$"
+      #define STR0057 "VIA NAO CADASTRADA"
+      #define STR0058 "IMPORTADOR NAO CADASTRADO"
+      #define STR0059 "COND. PAGTO NAO CADASTRADA"
+      #define STR0060 "Nacionalizaá∆o ainda n∆o dispon°vel no SIGAEIC"
+      #define STR0061 "PORTO NAO CADASTRADO"
+      #define STR0062 "Emite um relatÛrio com os campos selecionados pelo usu·rio,"
+      #define STR0063 'e que est„o aparecendo no "Browse".'
+      #define STR0064 "Zebrado"
+      #define STR0065 "Administracao"
+      #define STR0066 "REGISTRO(S)"
+      #define STR0067 "CANCELADO PELO OPERADOR"
+      #define STR0068 "Pagina..:      001"
+      #define STR0069 "Emissao.: "
+      #define STR0070 "Sim"
+   #ENDIF
+#ENDIF
