@@ -4,45 +4,151 @@
 #INCLUDE "restful.ch"
 #INCLUDE "topconn.ch"
 
+//BRWAPIZPI
+
 /*/{Protheus.doc} JOBTIT01 - JOB para pesquisa do titulos via API
 	@author Edilson Nascimento
 	@since 13/07/2021
 /*/
 USER FUNCTION JOBTIT01()
 
-Local cQuery
+Local _cQuery
 
-local jJsonList   :=''
+local _cKey
+local _cID
+local _cURL
+local _aHeader
+local _cParms
+local _cRetGet
+local _cRetPost
+local _cURLBody
+local _aHeaBody
+local _cRetGetBody
+local _cRetPostBody
+
+local _cDataIni
+local _cDataFim
+local _cConvenio
+local _cAgencia
+local _cConta
+
+local jJsonList     :=''
 local cRetGet
 local cGetParms
-Local aHeadStr    := {} 
-local cHeaderList :=''
-Local resp        :=""
-local cKey        := "7091a08b05ffbed01360e18120050756b961a5b0"
-local cDataIni
-local cDataFim
+Local aHeadStr      := {} 
+local cHeaderList   :=''
+Local resp          :=""
+local _aBaixa
+local _nPos
+
+local lHomologa     := .F.
+
+private lMsErroAuto := .F.
 
 
     PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SM0", "SA1", "SE1", "SE9", "SEE", "ZPI", "SEA" MODULO "FIN"
 
 
-    cQuery := " SELECT ZPI.ZPI_BANCO, ZPI.ZPI_DTREG REGISTRO, SEE.EE_OPER, SEE.EE_AGENCIA AGENCIA, SEE.EE_CONTA CONTA "     + Chr(13)+Chr(10)
-	cQuery += "    FROM " + RetSqlName("ZPI") + " ZPI "												                        + Chr(13)+Chr(10)
-    cQuery += "    LEFT JOIN " + RetSqlName("SE1") + " SE1 ON  "                                                            + Chr(13)+Chr(10)
-    cQuery += "              ZPI.ZPI_PREFIX = SE1.E1_PREFIXO and ZPI.ZPI_NUM = SE1.E1_NUM "                                 + Chr(13)+Chr(10)
-    cQuery += "              AND ZPI.ZPI_NUM = SE1.E1_NUM "                                                                 + Chr(13)+Chr(10)
-    cQuery += "    LEFT JOIN " + RetSqlName("SEE") + " SEE ON ZPI.ZPI_BANCO = SEE.EE_CODIGO "                               + Chr(13)+Chr(10)
-	cQuery += " WHERE ZPI.ZPI_DTBAIX = ' ' "						                                                        + Chr(13)+Chr(10)
-    cQuery += "       AND ZPI.ZPI_DTREG <> ' ' "						                                                    + Chr(13)+Chr(10)
-    cQuery += "       AND ZPI.ZPI_BANCO = '001' "						                                                    + Chr(13)+Chr(10)    
-    cQuery += "       AND ZPI.D_E_L_E_T_ <> '*' "						                                                    + Chr(13)+Chr(10)
-	cQuery += " ORDER BY ZPI.ZPI_DTREG "                                                                                    + Chr(13)+Chr(10)
+    _cQuery := " SELECT ZPI.ZPI_BANCO, ZPI.ZPI_DTREG REGISTRO, ZPI_NROCON CONVENIO,"                                        + Chr(13)+Chr(10)
+    _cQuery += "        SEE.EE_OPER, SEE.EE_AGENCIA AGENCIA, SEE.EE_CONTA CONTA "                                           + Chr(13)+Chr(10)    
+	_cQuery += "    FROM " + RetSqlName("ZPI") + " ZPI "												                    + Chr(13)+Chr(10)
+    _cQuery += "    LEFT JOIN " + RetSqlName("SE1") + " SE1 ON  "                                                           + Chr(13)+Chr(10)
+    _cQuery += "              ZPI.ZPI_PREFIX = SE1.E1_PREFIXO and ZPI.ZPI_NUM = SE1.E1_NUM "                                + Chr(13)+Chr(10)
+    _cQuery += "              AND ZPI.ZPI_NUM = SE1.E1_NUM "                                                                + Chr(13)+Chr(10)
+    _cQuery += "    LEFT JOIN " + RetSqlName("SEE") + " SEE ON ZPI.ZPI_BANCO = SEE.EE_CODIGO "                              + Chr(13)+Chr(10)
+	_cQuery += " WHERE ZPI.ZPI_DTBAIX = ' ' "						                                                        + Chr(13)+Chr(10)
+    _cQuery += "       AND ZPI.ZPI_DTREG <> ' ' "						                                                    + Chr(13)+Chr(10)
+    _cQuery += "       AND ZPI.ZPI_BANCO = '001' "						                                                    + Chr(13)+Chr(10)    
+    _cQuery += "       AND ZPI.D_E_L_E_T_ <> '*' "						                                                    + Chr(13)+Chr(10)
+	_cQuery += " ORDER BY ZPI.ZPI_DTREG "                                                                                   + Chr(13)+Chr(10)
 
-    TCQUERY cQuery Alias TMP_ZPI New
+    _cQuery := ChangeQuery( _cQuery )
+
+    TcQuery _cQuery Alias TMP_ZPI New
 
     TMP_ZPI->( dbGoTop() )
-
     If ! TMP_ZPI->( Eof() )
+
+        if lHomologa
+
+            _cKey           := "d27b977903ffab701360e17d00050f56b9e1a5b0"
+            _cID            := "Basic ZXlKcFpDSTZJakk1T0RrNFpESXRaV0UyTkMwME5HWXhMU0lzSW1OdlpHbG5iMUIxWW14cFkyRmtiM0lpT2pBc0ltTnZaR2xuYjFOdlpuUjNZWEpsSWpveE5Ea3dNQ3dpYzJWeGRXVnVZMmxoYkVsdWMzUmhiR0ZqWVc4aU9qRjk6ZXlKcFpDSTZJakV4WVRFaUxDSmpiMlJwWjI5UWRXSnNhV05oWkc5eUlqb3dMQ0pqYjJScFoyOVRiMlowZDJGeVpTSTZNVFE1TURBc0luTmxjWFZsYm1OcFlXeEpibk4wWVd4aFkyRnZJam94TENKelpYRjFaVzVqYVdGc1EzSmxaR1Z1WTJsaGJDSTZNU3dpWVcxaWFXVnVkR1VpT2lKb2IyMXZiRzluWVdOaGJ5SXNJbWxoZENJNk1UWXhPRFE1TVRRME1UazVPWDA="                    
+            _cURL           := AllTrim( GetMV("AP_URLBTH") ) // "https://oauth.bb.com.br/oauth/token" 
+            _aHeader        := {}
+            _cParms         := ""
+            _cRetGet        := ""
+            _cRetPost       := ""
+
+            _cURLBody       := "https://api.bb.com.br/cobrancas/v2/boletos?gw-dev-app-key=" + _cKey
+            _aHeaBody       := {}
+            _cRetGetBody    := ""
+            _cRetPostBody   := ""
+
+            _cDataIni       := "15.12.2020"
+            _cDataFim       := "31.03.2021"
+            _cConvenio      := "123873"
+            _cAgencia       := "452"
+            _cConta         := "23873"
+
+        else
+
+            _cKey           := "7091a08b05ffbed01360e18120050756b961a5b0"
+            _cID            := "Basic ZXlKcFpDSTZJbVkyWVRWbU1qY3RaR1V5TkMwME1Ea2lMQ0pqYjJScFoyOVFkV0pzYVdOaFpHOXlJam93TENKamIyUnBaMjlUYjJaMGQyRnlaU0k2TVRReE16RXNJbk5sY1hWbGJtTnBZV3hKYm5OMFlXeGhZMkZ2SWpveGZROmV5SnBaQ0k2SWlJc0ltTnZaR2xuYjFCMVlteHBZMkZrYjNJaU9qQXNJbU52WkdsbmIxTnZablIzWVhKbElqb3hOREV6TVN3aWMyVnhkV1Z1WTJsaGJFbHVjM1JoYkdGallXOGlPakVzSW5ObGNYVmxibU5wWVd4RGNtVmtaVzVqYVdGc0lqb3hMQ0poYldKcFpXNTBaU0k2SW5CeWIyUjFZMkZ2SWl3aWFXRjBJam94TmpJeE1qY3hPREE0T0RBNWZR"            
+            _cURL           := AllTrim( GetMV("AP_URLBRP") ) + _cKey  // AllTrim( GetMV("AP_URLBTP") )
+            _aHeader        := {}
+            _cParms         := ""
+            _cRetGet        := ""
+            _cRetPost       := ""
+
+            _cURLBody       := "https://api.bb.com.br/cobrancas/v2/boletos?gw-dev-app-key=" + _cKey
+            _aHeaBody       := {}
+            _cRetGetBody    := ""
+            _cRetPostBody   := "" 
+
+            _cDataIni       := StrZero( Day( SToD( TMP_ZPI->REGISTRO ) ), 2 ) + "." + StrZero( Month( SToD( TMP_ZPI->REGISTRO ) ), 2 ) + "." + StrZero( Year( SToD( TMP_ZPI->REGISTRO ) ), 4 )
+            _cDataFim       := StrZero( Day( Date() ), 2 ) + "." + StrZero( Month( Date() ), 2 ) + "." + StrZero( Year( Date() ), 4 )
+            _cConvenio      := AllTrim( TMP_ZPI->CONVENIO )
+            _cAgencia       := AllTrim( TMP_ZPI->AGENCIA )
+            _cConta         := AllTrim( TMP_ZPI->CONTA )
+
+
+        Endif
+
+        // Periodo de Pesquisa
+
+
+        // Header
+        Aadd( _aHeader, "Authorization: " +  _cID )
+        Aadd( _aHeader, "Content-Type: application/x-www-form-urlencoded")
+
+        _cParms := "grant_type=client_credentials"
+        _cParms += "&scope=cobrancas.boletos-requisicao cobrancas.boletos-info"
+
+        _cRetPost := HTTPPost( _cURL, /*cGetParms*/, _cParms, /*nTimeOut*/, _aHeader, @_cRetGet)
+
+        //Transforma o retorno em um JSON
+        jJsonToken := JsonObject():New()
+        jJsonToken:FromJson( _cRetPost ) 
+
+
+        // Body
+        AAdd( _aHeaBody, "Content-Type: application/json")	
+        Aadd( _aHeaBody, "Authorization: Bearer "+Escape(jJsonToken["access_token"] ) )
+
+        _cParms := "&numeroConvenio|" + _cConvenio
+        _cParms += "&agenciaBeneficiario|" + _cAgencia
+        _cParms += "&contaBeneficiario|" + _cConta
+        _cParms += '&indicadorSituacao|"B"'
+        _cParms += "&indice|300"
+        _cParms += "&codigoEstadoTituloCobranca|7"
+        _cParms += "&dataInicioMovimento|" + _cDataIni
+        _cParms += "&dataFimMovimento|"  + _cDataFim
+
+        _cRetPostBody := HttpPost( _cURLBody ,/*cGetParms*/, _cParms,/*nTimeOut*/, _aHeader, @_cRetGetBody)
+
+
+
+//    --------- Alteracao Edilson
 
         //
         // Define a data para pesquisa dos registro no banco
@@ -85,6 +191,34 @@ local cDataFim
 
 
         If ValType( jJsonList ) == "A" .and. Len( jJsonList ) > 0
+
+            for _nPos := 1 to len( jJsonList )
+
+                    _aBaixa := {    {"E1_PREFIXO",  jJsonList['prefixo'] ,Nil },;
+                                    {"E1_NUM",      jJsonList['titulo']  ,Nil },;
+                                    {"E1_TIPO",     jJsonList['tipo'] ,Nil },;
+                                    {"E1_CLIENTE",  jJsonList['cliente'] ,Nil },;
+                                    {"E1_LOJA" ,    jJsonList['loja'] ,Nil },;
+                                    {"E1_NATUREZ",  jJsonList['natureza'],Nil },;
+                                    {"E1_PARCELA",  " " ,Nil },;
+                                    {"AUTMOTBX",    "001" ,Nil },;
+                                    {"CBANCO",      jJsonList['banco'] ,Nil },;
+                                    {"CAGENCIA",    jJsonList['agencia'] ,Nil },;
+                                    {"CCONTA",      jJsonList['conta'] ,Nil },;
+                                    {"AUTDTBAIXA",  CtoD( jJsonList['baixa'] ) ,Nil },;
+                                    {"AUTDTCREDITO", CtoD( jJsonList['credito'] ) ,Nil },;
+                                    {"AUTHIST",     "BAIXA ROTINA AUTOMATICA" ,Nil } ;
+                                }
+
+                MSExecAuto({|x,y,b,a| Fina070(x,y,b,a)}, _aBaixa,6,.F., 3) 
+
+                If lMsErroAuto
+                    MostraErro()
+                Else
+                    conout("BAIXADO COM SUCESSO!" + jJsonList['titulo'] )
+                Endif
+
+            next
 
         Endif
 
