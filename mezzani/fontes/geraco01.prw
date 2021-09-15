@@ -200,7 +200,7 @@ private lMsErroAuto := .F.
                                 @ 150,018       SAY     "Fill Rate:"
                                 @ 150,085       COMBOBOX _oCboFilRate             ;
                                                 VAR     _cFilRate                 ;
-                                                ITEMS   {  "1 - Sim", "2 - Não" } ;
+                                                ITEMS   {  "1 - Sim", "2 - Nao" } ;
                                                 SIZE    40,20                     ;
                                                 PIXEL                             ;
                                                 OF      _oDlg1
@@ -208,7 +208,7 @@ private lMsErroAuto := .F.
                                 @ 170,018       SAY     "Valida Peso:  : "
                                 @ 170,085       COMBOBOX _oCboVldPeso             ;
                                                 VAR     _cVldPeso                 ;
-                                                ITEMS   {  "1 - Sim", "2 - Não" } ;
+                                                ITEMS   {  "1 - Sim", "2 - Nao" } ;
                                                 SIZE    40,20                     ;
                                                 PIXEL                             ;
                                                 OF      _oDlg1
@@ -408,7 +408,7 @@ private lMsErroAuto := .F.
                                                                                                                         },,_oPainel2,,,,,,,,,,,, .F.,, .T.,, .T.,,,)
 
                                                 _oBrowStep2:bLDblClick := {||   (       iif( _aStep2[_oBrowStep2:nAt, pST2_CORTE ]:CNAME == "LBNO", ;
-                                                                                                        iif(    Inf_Step2( @_aStep2[_oBrowStep2:nAt], _cCboMotivoCorte ),;
+                                                                                                        iif(    Inf_Step2( @_aStep2[_oBrowStep2:nAt] ),;
                                                                                                                 _aStep2[_oBrowStep2:nAt, pST2_CORTE ] := _oOk, ;
                                                                                                                 _aStep2[_oBrowStep2:nAt, pST2_CORTE ] := _oNo ), ;
                                                                                                         ( _aStep2[_oBrowStep2:nAt, pST2_CORTE ] := _oNo, ;
@@ -843,120 +843,90 @@ Programa............: INF_STEP2( _cDescriProd, _nQuantPedido, _nQuantCorte, _cMo
 Autor...............: Edilson Nascimento
 Data................: 13/07/2021
 Descricao / Objetivo: RotinaRotina para que seja alimentada a quantidade e o motivo do corte.
-Doc. Origem.........: 
+Doc. Origem.........:
 Solicitante.........: 
 Uso.................: 
 =======================================================================================*/
-STATIC FUNCTION Inf_Step2( _aArray, _cMotivoCorte )
+//STATIC FUNCTION Inf_Step2( _aArray, _cDescriProd, _nQuantPedido, _nQuantCorte, _cMotivoCorte )
+STATIC FUNCTION Inf_Step2( _aArray )
 
 
-local _oDlg
-local _oPainel1
-local _oPainel2
-local _oSay
-local _oBrowse
-local _aArrTemp  := {}
-local _lAtu      := .T.
+local _oDlg1
+local _oCboMotivoCorte
+local _aTblMotvCort      := { }
+local _lRetValue         := .F.
+
+local _cDescriProd       := _aArray[ pST2_DESCRICAO ]
+local _nQuantPedido      := _aArray[ pST2_SALDO_PEDIDO ]
+local _nQuantCorte       := _aArray[ pST2_SALDO_CORTE ]
+local _cMotivoCorte      := _aArray[ pST2_MOTIVO_CORTE ]
+
 local _nPos
-local _nPointer
-local _nSaldo    := 0
-local _lRetValue := .T.
+local _nPerc
+local _nResult
+local _nSoma
 
+ // _aStep2[_oBrowStep2:nAt, pST2_DESCRICAO ], _aStep2[_oBrowStep2:nAt, pST2_SALDO_PEDIDO ], @_aStep2[_oBrowStep2:nAt, pST2_SALDO_CORTE ], @_aStep2[_oBrowStep2:nAt, pST2_MOTIVO_CORTE ] ),;
 
-        for _nPos := 1 to len( _aArray[ pST2_ITEMS ] )
+	If SX5->( dbSetOrder(1), dbSeek( xFilial("SX5") + "Z4" ) )
+		while SX5->X5_TABELA == 'Z4' .and. ;
+                        SX5->( .not. Eof() )
+                        AAdd( _aTblMotvCort, Alltrim( SX5->X5_CHAVE ) + "-" + Alltrim( SX5->X5_DESCRI ) )
+                        SX5->( dbSkip() )
+			enddo
+	Else
+                AAdd( _aTblMotvCort, " " )
+	EndIf
 
-                AAdd( _aArrTemp,{       ;
-                                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_PEDIDO ],             ;   // PEDIDO
-                                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_PEDIDO ],       ;   // SALDO PEDIDO
-                                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_CORTE ]         ;   // SALDO CORTE
-                                } )
+        @ 00,00 TO 210,470 DIALOG _oDlg1 TITLE OemToAnsi( "Dados para o Corte" )
 
-                _nSaldo += _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_CORTE ]
+        @ 20,018        SAY     "Produto:"
+        @ 20,085        GET     _cDescriProd                    ;
+                        PICTURE PesqPict("SB1","B1_DESC")       ;
+                        WHEN   .F.
 
-        next
+        @ 35,018        SAY     "Quantidade de Corte:"
+        @ 35,085        GET     _nQuantCorte                    ;
+                        PICTURE PesqPict("SB1","B1_CONV")       ;
+                        VALID   iif( _nQuantCorte > _nQuantPedido, ( msgAlert("Valor do corte nao pode ser maior que a quantidade disponivel !","Atencao"), .F. ), .T. )
 
+        @ 50,018        SAY     "Motivo Corte:"
+        @ 50,085        COMBOBOX _oCboMotivoCorte;
+                        VAR     _cMotivoCorte                   ;
+                        ITEMS   _aTblMotvCort                   ;
+                        SIZE    90,20                           ;
+                        PIXEL                                   ;
+                        OF      _oDlg1
 
-        @ 00,00 TO 410,520 DIALOG _oDlg TITLE OemToAnsi( "Dados para o Corte" )
+        @ 090,110 BMPBUTTON TYPE 01 ACTION ( _lRetValue := .T., Close(_oDlg1) )
+        @ 090,140 BMPBUTTON TYPE 02 ACTION ( _lRetValue := .F., Close(_oDlg1) )
 
-        _oPainel1       := TPanel():New(010,000,,_oDlg, NIL, .T., .F., NIL, NIL,050,020, .T., .F. )
-        _oPainel1:Align := CONTROL_ALIGN_TOP // CONTROL_ALIGN_ALLCLIENT
+        ACTIVATE  DIALOG _oDlg1 CENTER
 
-        _oSay              := TSay():New( 005, 010,{|| 'Saldo:' + Transform( _nSaldo, '@E 999.99' )}, _oPainel1,,,,,,.T.,,,200,50)
-        _oSay:nClientWidth := _oPainel1:nClientWidth
-        _oSay:nWidth       := _oPainel1:nWidth
+        // Case tenha sido pressionado o botao de cancelamento da janela.
+	If _lRetValue
 
+                _nPerc := ( _nQuantCorte / _nQuantPedido ) * 100
 
-        _oPainel2       := TPanel():New(240,000,,_oDlg, NIL, .T., .F., NIL, NIL,000,200, .T., .F. )
-        _oPainel2:Align := CONTROL_ALIGN_ALLCLIENT
-
-
-        _oBrowse := TwBrowse():New(005, 005,,,, {       "PEDIDO",       ;
-                                                        "DISPONIVEL",   ;
-                                                        "CORTE"         ;
-                                                },,_oPainel2,,,,,,,,,,,, .F.,, .T.,, .T.,,,)
-
-        _oBrowse:bLDblClick     := {|| iif(     Alt_Corte( _aArrTemp[ _oBrowse:nAt, pST2_ITEM_SALDO_PEDIDO ], @_aArrTemp[ _oBrowse:nAt, pST2_ITEM_SALDO_CORTE ] ), _oBrowse:refresh(), Nil ) }
-        _oBrowse:bChange        := {|| ( _nSaldo := 0,  AEval( _aArrTemp, { || _nSaldo += 0 } )  ) }
-        _oBrowse:SetArray( _aArrTemp )
-        _oBrowse:bLine          :=      { ||    ;
-                                                {       ;     
-                                                        _aArrTemp[ _oBrowse:nAt ][ pST2_ITEM_PEDIDO       ], ;
-                                                        _aArrTemp[ _oBrowse:nAt ][ pST2_ITEM_SALDO_PEDIDO ], ;
-                                                        _aArrTemp[ _oBrowse:nAt ][ pST2_ITEM_SALDO_CORTE  ]  ;
-                                                }       ;
-                                        }
-
-        _oBrowse:Align := CONTROL_ALIGN_ALLCLIENT
-        _oBrowse:nScrollType := 1
-
-        _oBrowse:setFocus()
-        _oBrowse:refresh()                                
-
-        ACTIVATE MSDIALOG _oDlg ON INIT EnchoiceBar( _oDlg, { || _lAtu := .T., _oDlg:End() } , { || _lAtu := .F., _oDlg:End() },, ) // _aButtons3)
-
-        If _lAtu
                 _nSoma := 0
-                for _nPos := 1 to len( _aArrTemp )
-                        if ( _nPointer := AScan( _aArray[ pST2_ITEMS ], { |x| x[ pST2_ITEM_PEDIDO ] == _aArrTemp[ _nPos ][ pST2_ITEM_PEDIDO ] } ) ) > 0
-                                _aArray[ pST2_ITEMS ][ _nPointer ][ pST2_ITEM_SALDO_CORTE  ] := _aArrTemp[ _nPos ][ pST2_ITEM_SALDO_CORTE  ]
-                                _nSoma +=  _aArrTemp[ _nPos ][ pST2_ITEM_SALDO_CORTE  ]
-                        Endif
-                next
+		for _nPos := 1 to len( _aArray[ pST2_ITEMS ] )
+                        _nResult := _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_PEDIDO ] * _nPerc
+                        _nResult /= 100
+                        _nResult := Int( _nResult )
+                        _aArray[ pST2_ITEMS ][ _nPos ][ pST2_ITEM_SALDO_CORTE ] := _nResult
+                        _nSoma += _nResult
+		next
 
-                _aArray[ pST2_SALDO_CORTE  ]     := _nSoma
+                _aArray[ pST2_DESCRICAO ]        := _cDescriProd
+                _aArray[ pST2_SALDO_PEDIDO ]     := _nQuantPedido
+                _aArray[ pST2_SALDO_CORTE ]      := _nQuantCorte
                 _aArray[ pST2_MOTIVO_CORTE ]     := _cMotivoCorte
-                _aArray[ pST2_PERCENTUAL_CORTE ] := 0
+                _aArray[ pST2_PERCENTUAL_CORTE ] := _nPerc
+                _aArray[ pST2_SALDO_CORTE ]      := _nSoma
 
-                _lRetValue := .T.
-        Else
-                _lRetValue := .F.
-        Endif
+	EndIf
 
 return _lRetValue
-
-
-****************************************************************************************************************
-Static Function Alt_Corte( _nDisponivel, _nCorte )
-
-Local _oDLG
-Local _oBtnConfirm
-Local _oBtnCancel
-Local _nValor := _nCorte
-Local bSaiu   := .F.
-
-
-        DEFINE MSDIALOG oDLG TITLE "Altera Corte" FROM 000, 000  TO 080, 296 COLORS 0, 16777215 PIXEL
-                @ 008, 002 SAY  "Corte :"                            SIZE 028, 009 OF _oDLG              COLORS 0, 16777215 PIXEL
-                @ 006, 025 MSGET  _nValor    PICT "@E 999,999,999.99" SIZE 123, 010 OF _oDLG Valid _nValor <= _nDisponivel  COLORS 0, 16777215 PIXEL
-                _oBtnCancel  := TButton():New( 021, 021 ,'Cancelar',  oDlg,{|| bSaiu  := .F. , oDLG:End() }  ,50, 011,,,.F.,.T.,.F.,,.F.,,,.F. )                
-                _oBtnConfirm := TButton():New( 021, 095 ,'Confirmar', oDlg,{|| bSaiu  := .T. , oDLG:End() }  ,50, 011,,,.F.,.T.,.F.,,.F.,,,.F. )
-        ACTIVATE MSDIALOG oDLG CENTERED
-
-        If bSaiu
-                _nCorte := _nValor
-        EndIf
-
-Return bSaiu
 
 
 /*=====================================================================================
