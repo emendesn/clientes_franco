@@ -11,10 +11,10 @@
 		"totvsLanguageServer.welcomePage": false,
 		"files.exclude": {
 			".gitignore": true,
-			".vscode": true,
+			"**/.vscode": true,
 			"**/include": true,
-			"smartclient.ini": true,      
-			"**/smartclient_x64": true
+			"smartclient.ini": true,
+			"**/smartclient": true
     },
     "editor.tabSize": 2,
     "editor.detectIndentation": false
