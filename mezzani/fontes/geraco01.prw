@@ -542,8 +542,8 @@ private lMsErroAuto := .F.
                                                                                     _aPedidos[ _nPos ][ pPED_COD_PROD ],                            ;   // PRODUTO
                                                                                     _aPedidos[ _nPos ][ pPED_DESC_PROD ],                           ;   // DESCRICAO
                                                                                     '(' + _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] + '-' +         ;
-                                                                                    _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
-                                                                                    Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
+                                                                                          _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
+                                                                                          Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
                                                                                     _aPedidos[ _nPos ][ pPED_BAIRRO_CLIENTE ],                      ;   // BAIRRO
                                                                                     _aPedidos[ _nPos ][ pPED_CIDADE_CLIENTE ],                      ;   // CIDADE
                                                                                     _aPedidos[ _nPos ][ pPED_PEDIDO ],                              ;   // PEDIDO
