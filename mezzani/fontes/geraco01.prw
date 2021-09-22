@@ -1005,14 +1005,10 @@ local _nQtdCorte  := _aArray[ pST3_QTDE_CORTE ]
                 _nPesoAtual := _nPesoAtual * _aArray[ pST3_PESO_PRODUTO ]
                 _nPesoAtual := _nPesoAtual * _aArray[ pST3_QTD_CAIXA  ]
 
-                If _nPesoAtual >= _aArray[ pST3_PESO_MINIMO_PRODUTO_TRANSP ]
-                        _aArray[ pST3_QTDE_DISP  ] := _nQtdDisp
-                        _aArray[ pST3_QTDE_CORTE ] := _nQtdCorte
-                        _aArray[ pST3_PESO_ATUAL ] := _nPesoAtual
-                Else
-                        msgAlert("Peso para corte, inferior ao peso minimo !","Atencao")
-                        _lRetValue := .F.
-                Endif
+                _aArray[ pST3_QTDE_DISP  ] := _nQtdDisp
+                _aArray[ pST3_QTDE_CORTE ] := _nQtdCorte
+                _aArray[ pST3_PESO_ATUAL ] := _nPesoAtual
+
         EndIf
 
 return _lRetValue
