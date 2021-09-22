@@ -1,4 +1,3 @@
-odin
-*.obj
-*.cdx
-mezzani/smartclient_x64/smartclient.ini
+contech/smartclient
+mezzani/smartclient
+ottobock/smartclient
