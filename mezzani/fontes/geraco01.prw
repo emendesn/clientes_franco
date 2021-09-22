@@ -493,37 +493,68 @@ private lMsErroAuto := .F.
 
                                                 if _aPedidos[ _nPos ][ pPED_MRK_STEP_2 ]:CNAME == "LBOK" .and. _aPedidos[ _nPos ][ pPED_SALDO_CORTE ] > 0
 
-                                                        // _nPesoAtual := _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ] -  _aPedidos[ _nPos ][ pPED_SALDO_CORTE ]
-                                                        _nPesoAtual := _aPedidos[ _nPos ][ pPED_SALDO_CORTE ]
-                                                        _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ]
-                                                        _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]
-
-
                                                         //
                                                         // Incluida a validacao para desconsiderar produtos onde o peso esta abaixo do definido no cadastro.
                                                         //
-                                                        If iif( Left( _cVldPeso, 1 ) == '1', _nPesoAtual >= _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ], .T. )
+                                                        If Left( _cVldPeso, 1 ) == '1'
 
-                                                                AAdd( _aStep3,  {         ;
-                                                                                        _oOk,                                                           ;   // CORTE
-                                                                                        _aPedidos[ _nPos ][ pPED_COD_PROD ],                            ;   // PRODUTO
-                                                                                        _aPedidos[ _nPos ][ pPED_DESC_PROD ],                           ;   // DESCRICAO
-                                                                                        '(' + _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] + '-' +         ;
-                                                                                        _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
-                                                                                        Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
-                                                                                        _aPedidos[ _nPos ][ pPED_BAIRRO_CLIENTE ],                      ;   // BAIRRO
-                                                                                        _aPedidos[ _nPos ][ pPED_CIDADE_CLIENTE ],                      ;   // CIDADE
-                                                                                        _aPedidos[ _nPos ][ pPED_PEDIDO ],                              ;   // PEDIDO
-                                                                                        _aPedidos[ _nPos ][ pPED_MANIFESTO ],                           ;   // MANITESTO
-                                                                                        _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ],                        ;   // QTDE DISP
-                                                                                        _aPedidos[ _nPos ][ pPED_SALDO_CORTE ],                         ;   // QTDE A CORTAR
-                                                                                        _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ],          ;   // PESO MINIMO PRODUTO TRANSPORTADORA
-                                                                                        _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ],                        ;   // PESO PRODUTO
-                                                                                        _nPesoAtual,                                                    ;   // PESO ATUAL
-                                                                                        _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]                        ;   // QUANTIDADE CAIXA
-                                                                                } )
+                                                            _nPesoAtual := 0
+                                                            AEval( _aPedidos, { |xItem| _nPesoAtual += iif( xItem[ pPED_MRK_STEP_2 ] :CNAME == "LBOK" .and. ;
+                                                                                                            xItem[ pPED_CODIGO_CLIENTE ] ==_aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] .and. ;
+                                                                                                            xItem[ pPED_LOJA_CLIENTE ] == _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] ,;
+                                                                                                            xItem[ pPED_SALDO_CORTE ], 0 ) } )
+
+                                                            _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ]
+                                                            _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]
+
+                                                            If  _nPesoAtual >= _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ]
+
+                                                                    AAdd( _aStep3,  {         ;
+                                                                                            _oOk,                                                           ;   // CORTE
+                                                                                            _aPedidos[ _nPos ][ pPED_COD_PROD ],                            ;   // PRODUTO
+                                                                                            _aPedidos[ _nPos ][ pPED_DESC_PROD ],                           ;   // DESCRICAO
+                                                                                            '(' + _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] + '-' +         ;
+                                                                                            _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
+                                                                                            Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
+                                                                                            _aPedidos[ _nPos ][ pPED_BAIRRO_CLIENTE ],                      ;   // BAIRRO
+                                                                                            _aPedidos[ _nPos ][ pPED_CIDADE_CLIENTE ],                      ;   // CIDADE
+                                                                                            _aPedidos[ _nPos ][ pPED_PEDIDO ],                              ;   // PEDIDO
+                                                                                            _aPedidos[ _nPos ][ pPED_MANIFESTO ],                           ;   // MANITESTO
+                                                                                            _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ],                        ;   // QTDE DISP
+                                                                                            _aPedidos[ _nPos ][ pPED_SALDO_CORTE ],                         ;   // QTDE A CORTAR
+                                                                                            _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ],          ;   // PESO MINIMO PRODUTO TRANSPORTADORA
+                                                                                            _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ],                        ;   // PESO PRODUTO
+                                                                                            _nPesoAtual,                                                    ;   // PESO ATUAL
+                                                                                            _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]                        ;   // QUANTIDADE CAIXA
+                                                                                    } )
+                                                            Else
+                                                                    _lValidPesoTransp := .T.
+                                                            EndIf
+
                                                         Else
-                                                                _lValidPesoTransp := .T.
+
+                                                            _nPesoAtual := _aPedidos[ _nPos ][ pPED_SALDO_CORTE ]
+                                                            _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ]
+                                                            _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]
+
+                                                            AAdd( _aStep3,  {         ;
+                                                                                    _oOk,                                                           ;   // CORTE
+                                                                                    _aPedidos[ _nPos ][ pPED_COD_PROD ],                            ;   // PRODUTO
+                                                                                    _aPedidos[ _nPos ][ pPED_DESC_PROD ],                           ;   // DESCRICAO
+                                                                                    '(' + _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] + '-' +         ;
+                                                                                    _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
+                                                                                    Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
+                                                                                    _aPedidos[ _nPos ][ pPED_BAIRRO_CLIENTE ],                      ;   // BAIRRO
+                                                                                    _aPedidos[ _nPos ][ pPED_CIDADE_CLIENTE ],                      ;   // CIDADE
+                                                                                    _aPedidos[ _nPos ][ pPED_PEDIDO ],                              ;   // PEDIDO
+                                                                                    _aPedidos[ _nPos ][ pPED_MANIFESTO ],                           ;   // MANITESTO
+                                                                                    _aPedidos[ _nPos ][ pPED_SALDO_PEDIDO ],                        ;   // QTDE DISP
+                                                                                    _aPedidos[ _nPos ][ pPED_SALDO_CORTE ],                         ;   // QTDE A CORTAR
+                                                                                    _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ],          ;   // PESO MINIMO PRODUTO TRANSPORTADORA
+                                                                                    _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ],                        ;   // PESO PRODUTO
+                                                                                    _nPesoAtual,                                                    ;   // PESO ATUAL
+                                                                                    _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]                        ;   // QUANTIDADE CAIXA
+                                                                            } )
                                                         EndIf
 
                                                 endif
