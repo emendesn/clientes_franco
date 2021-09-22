@@ -1,5 +1,3 @@
-odin
-*.obj
-*.cdx
-mezzani/smartclient/*
+mezzani/.vscode
+mezzani/smartclient
 mezzani/smartclient/smartclient.ini
