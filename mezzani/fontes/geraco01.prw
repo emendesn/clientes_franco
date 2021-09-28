@@ -616,7 +616,7 @@ private lMsErroAuto := .F.
                                                                                                                 _aStep3[_oBrowStep3:nAt, pST3_CORTE ] := _oOk, ;
                                                                                                                 _aStep3[_oBrowStep3:nAt, pST3_CORTE ] := _oNo ), ;
                                                                                                         _aStep3[_oBrowStep3:nAt, pST3_CORTE ] := _oNo ) ;
-                                                                                ),      _oBrowStep3:refresh() ;
+                                                                                ),      Calc_Step3( @_aStep3 ), _oBrowStep3:refresh() ;
                                                                         }
 
                                                 _oBrowStep3:SetArray( _aStep3 )
@@ -961,7 +961,7 @@ return _lRetValue
 
 
 /*=====================================================================================
-Programa............: INF_STEP3(  _nQtdDisp, _nQtdCorte )
+Programa............: INF_STEP3( _aArray )
 Autor...............: Edilson Nascimento
 Data................: 13/07/2021
 Descricao / Objetivo: Rotina para que sejam alteradas os valores de quantidade disponivel e quantidade de corte.
@@ -969,7 +969,7 @@ Doc. Origem.........:
 Solicitante.........: 
 Uso.................: 
 =======================================================================================*/
-STATIC Function Inf_Step3(  _aArray )
+STATIC Function Inf_Step3( _aArray )
 
 local _oDlg1
 local _lRetValue  := .F.
@@ -1012,6 +1012,59 @@ local _nQtdCorte  := _aArray[ pST3_QTDE_CORTE ]
         EndIf
 
 return _lRetValue
+
+
+/*=====================================================================================
+Programa............: Calc_STEP3( _aArray )
+Autor...............: Edilson Nascimento
+Data................: 22/07/2021
+Descricao / Objetivo: Rotiina para atualizacao da coluna com o peso atual.
+Doc. Origem.........: 
+Solicitante.........: 
+Uso.................: 
+=======================================================================================*/
+STATIC Procedure Calc_Step3( _aArray )
+
+local _nPos
+local _nCount
+local _nPeso
+local _nSomaPeso
+local _aTemp
+
+
+    if len( _aArray ) > 0
+
+        _aTemp := Aclone( _aArray )
+
+        for _nPos := 1 to len( _aArray )
+
+            _nSomaPeso := 0
+
+            for _nCount := 1 to len( _aTemp )
+
+
+                if _aTemp[ _nCount ][ pST3_CORTE ]:CNAME == "LBOK" .and. ;
+                      Alltrim( _aTemp[ _nCount ][ pST3_NOME_CLIENTE ] ) == Alltrim( _aArray[ _nPos ][ pST3_NOME_CLIENTE ] ) .and. ;
+                      Alltrim( _aTemp[ _nCount ][ pST3_NOME_CLIENTE ] ) == Alltrim( _aArray[ _nPos ][ pST3_NOME_CLIENTE ] ) .and. ;                      
+
+                    _nPeso := _aTemp[ _nCount ][ pST3_QTDE_CORTE ]
+                    _nPeso := _nPeso * _aTemp[ _nCount ][ pST3_PESO_PRODUTO ]
+                    _nPeso := _nPeso * _aTemp[ _nCount ][ pST3_QTD_CAIXA ]
+
+                    _nSomaPeso += _nPeso
+
+                endif
+
+            next
+
+            _aArray[ _nPos ][ pST3_PESO_ATUAL ] := _nSomaPeso
+
+        next
+
+    endif
+
+return
+
 
 
 /*=====================================================================================
