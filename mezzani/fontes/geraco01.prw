@@ -1026,9 +1026,7 @@ Uso.................:
 STATIC Procedure Calc_Step3( _aArray )
 
 local _nPos
-local _nCount
-local _nPeso
-local _nSomaPeso
+local _nPesoAtual
 local _aTemp
 
 
@@ -1038,26 +1036,15 @@ local _aTemp
 
         for _nPos := 1 to len( _aArray )
 
-            _nSomaPeso := 0
+            _nPesoAtual := 0
+            AEval( _aArray, { |xItem| _nPesoAtual += iif(  xItem[ pST3_CORTE ]:CNAME == "LBOK" .and. ;
+                                                          Alltrim( xItem[ pST3_NOME_CLIENTE ] ) == AllTrim( _aArray[ _nPos ][ pST3_NOME_CLIENTE ] ) ,;
+                                                          xItem[ pST3_QTDE_CORTE ], 0 ) } )
 
-            for _nCount := 1 to len( _aTemp )
+            _nPesoAtual := _nPesoAtual * _aArray[ _nPos ][ pST3_PESO_PRODUTO ]
+            _nPesoAtual := _nPesoAtual * _aArray[ _nPos ][ pST3_QTD_CAIXA ]
 
-
-                if _aTemp[ _nCount ][ pST3_CORTE ]:CNAME == "LBOK" .and. ;
-                      Alltrim( _aTemp[ _nCount ][ pST3_NOME_CLIENTE ] ) == Alltrim( _aArray[ _nPos ][ pST3_NOME_CLIENTE ] ) .and. ;
-                      Alltrim( _aTemp[ _nCount ][ pST3_NOME_CLIENTE ] ) == Alltrim( _aArray[ _nPos ][ pST3_NOME_CLIENTE ] ) .and. ;                      
-
-                    _nPeso := _aTemp[ _nCount ][ pST3_QTDE_CORTE ]
-                    _nPeso := _nPeso * _aTemp[ _nCount ][ pST3_PESO_PRODUTO ]
-                    _nPeso := _nPeso * _aTemp[ _nCount ][ pST3_QTD_CAIXA ]
-
-                    _nSomaPeso += _nPeso
-
-                endif
-
-            next
-
-            _aArray[ _nPos ][ pST3_PESO_ATUAL ] := _nSomaPeso
+            _aArray[ _nPos ][ pST3_PESO_ATUAL ] := _nPesoAtual
 
         next
 
