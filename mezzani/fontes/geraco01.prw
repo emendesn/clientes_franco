@@ -499,15 +499,31 @@ private lMsErroAuto := .F.
                                                         If Left( _cVldPeso, 1 ) == '1'
 
                                                             _nPesoAtual := 0
-                                                            AEval( _aPedidos, { |xItem| _nPesoAtual += iif( xItem[ pPED_MRK_STEP_2 ] :CNAME == "LBOK" .and. ;
+                                                            AEval( _aPedidos, { |xItem| _nPesoAtual += iif( xItem[ pPED_MRK_STEP_2 ]:CNAME == "LBOK" .and. ;
                                                                                                             xItem[ pPED_CODIGO_CLIENTE ] ==_aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] .and. ;
                                                                                                             xItem[ pPED_LOJA_CLIENTE ] == _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] ,;
                                                                                                             xItem[ pPED_SALDO_CORTE ], 0 ) } )
 
-                                                            _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ]
+                                                            _nPesoProduto := 0
+                                                            AEval( _aPedidos, { |xItem| _nPesoProduto += iif( xItem[ pPED_MRK_STEP_2 ]:CNAME == "LBOK" .and. ;
+                                                                                                            xItem[ pPED_CODIGO_CLIENTE ] ==_aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] .and. ;
+                                                                                                            xItem[ pPED_LOJA_CLIENTE ] == _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] ,;
+                                                                                                            xItem[ pPED_PESO_PRODUTO ], 0 ) } )
+
+                                                            _nPesoAtual := _nPesoAtual * _nPesoProduto
                                                             _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]
 
                                                             If  _nPesoAtual >= _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ]
+
+                                                                    // Recalcula o peso do produto
+                                                                    _nPesoAtual := 0
+                                                                    AEval( _aPedidos, { |xItem| _nPesoAtual += iif( xItem[ pPED_MRK_STEP_2 ]:CNAME == "LBOK" .and. ;
+                                                                                                                    xItem[ pPED_CODIGO_CLIENTE ] ==_aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] .and. ;
+                                                                                                                    xItem[ pPED_LOJA_CLIENTE ] == _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] ,;
+                                                                                                                    xItem[ pPED_SALDO_CORTE ], 0 ) } )
+
+                                                                    _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ]
+                                                                    _nPesoAtual := _nPesoAtual * _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]
 
                                                                     AAdd( _aStep3,  {         ;
                                                                                             _oOk,                                                           ;   // CORTE
