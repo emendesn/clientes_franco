@@ -105,6 +105,7 @@ local _oBrowStep3
 local _aStep3
 local _lValidPesoTransp
 local _aButtons3        := {}
+local _nPesoProduto
 local _nPesoAtual
 
 local _aPedidos
@@ -113,6 +114,8 @@ local _nPointer
 local _nCount
 local _lAtuFase2        := .F.
 local _lAtuFase3        := .F.
+local _nSelectFase3
+local _nPsoMinFase3
 
 local _oOk              := LoadBitMap(GetResources(), "LBOK")
 local _oNo              := LoadBitMap(GetResources(), "LBNO")
@@ -663,27 +666,54 @@ private lMsErroAuto := .F.
                                                 _oBrowStep3:setFocus()
                                                 _oBrowStep3:refresh()                                
 
-                                                ACTIVATE MSDIALOG _oDlg3 ON INIT EnchoiceBar( _oDlg3, { || _lAtuFase3 := .T., _oDlg3:End() } , { || _lAtuFase2 := .F., _oDlg3:End() },, _aButtons3)
+                                                ACTIVATE MSDIALOG _oDlg3 ON INIT EnchoiceBar( _oDlg3, { || _lAtuFase3 := .T., _oDlg3:End() } , { || _lAtuFase3 := .F., _oDlg3:End() },, _aButtons3)
 
                                                 if _lAtuFase3
-                                                        for _nPos := 1 to Len( _aPedidos )
 
-                                                                // Buscando o Produto
-                                                                if ( _nPointer := AScan( _aStep3, { |x| x[ pST3_PRODUTO ] == _aPedidos[ _nPos ][ pPED_COD_PROD ] .and. ;
-                                                                                                        x[ pST3_PEDIDO ] == _aPedidos[ _nPos ][ pPED_PEDIDO ]  } ) ) > 0
+                                                        // Identifica se existem itens selecionados
+                                                        _nSelectFase3 := 0
+                                                        AEval( _aStep3, { |xItem| _nSelectFase3 += iif( xItem[ pST3_CORTE ]:CNAME == "LBOK", 1, 0 ) } )
+                                                        if _nSelectFase3 > 0
 
-                                                                        _aPedidos[ _nPos ][ pPED_MRK_STEP_3 ]  := _aStep3[ _nPointer ][ pST3_CORTE ]
-                                                                        _aPedidos[ _nPos ][ pPED_SALDO_CORTE ] := _aStep3[ _nPointer ][ pST3_QTDE_CORTE ]
+                                                            // Analise para identifica se existem com o peso minimo para corte
+                                                            _nPsoMinFase3 := 0
+                                                            AEval( _aStep3, { |xItem| _nPsoMinFase3 += iif( xItem[ pST3_CORTE ]:CNAME == "LBOK" .and. ;
+                                                                                                            xItem[ pST3_PESO_ATUAL ] >= xItem[ pST3_PESO_MINIMO_PRODUTO_TRANSP ], 1, 0 ) } )
 
-                                                                EndIf
+                                                            if _nPsoMinFase3 == 0
+                                                                msgAlert("Nenhum pedido selecionado atinge o peso minimo para corte!","Atencao")
+                                                            ElseIf _nSelectFase3 < _nPsoMinFase3
+                                                                msgAlert("Existem produtos que nao atingiram o peso minimo para corte!","Atencao")
+                                                            EndIf
 
-                                                        next
-                                                        _nfase++
+                                                            // Se houver no minimo um pedido que ainja o peso minimo atualiza e passa para a proxima fase
+                                                            if _nPsoMinFase3 >= 1
+                                                                for _nPos := 1 to Len( _aPedidos )
+
+                                                                    // Buscando o Produto
+                                                                    if ( _nPointer := AScan( _aStep3, { |x| x[ pST3_PRODUTO ] == _aPedidos[ _nPos ][ pPED_COD_PROD ] .and. ;
+                                                                                                            x[ pST3_PEDIDO ] == _aPedidos[ _nPos ][ pPED_PEDIDO ]  } ) ) > 0
+
+                                                                            _aPedidos[ _nPos ][ pPED_MRK_STEP_3 ]  := _aStep3[ _nPointer ][ pST3_CORTE ]
+                                                                            _aPedidos[ _nPos ][ pPED_SALDO_CORTE ] := _aStep3[ _nPointer ][ pST3_QTDE_CORTE ]
+
+                                                                    EndIf
+
+                                                                next
+                                                                _nfase++
+                                                            else
+                                                                _nfase := 3
+                                                            Endif
+
+                                                        else
+                                                            msgAlert("Nao existe registros selecionados!","Atencao")
+                                                            _nfase := 3
+                                                        endif
+
                                                 Else
                                                         _nfase--
                                                 EndIf
 
-                                        
                                         else
                                                 msgAlert("Nao existe registros selecionados!","Atencao")
                                                 _nfase--
