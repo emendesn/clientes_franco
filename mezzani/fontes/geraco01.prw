@@ -81,8 +81,6 @@ local _cManiDe          := '      '   // Space(6)
 local _cManiAte         := '999999'   // Space(6)
 local _dEmissaoDe       := CTod('01/01/20')
 local _dEmissaoAte      := CTod('31/12/21')
-local _cFormaProce      := Space(1)
-local _oCboFormaProce
 local _cFilRate         := Space(1)
 local _oCboFilRate
 local _cVldPeso         := Space(1)
@@ -191,48 +189,39 @@ private lMsErroAuto := .F.
                                                 SIZE    40,20                     ;
                                                 VALID   iif( .not. empty( _dEmissaoAte ), .T., ( msgAlert("Data da emissao deve ser maior que a data incial!","Atencao"), .F. ) )
 
-                                @ 130,018       SAY     "Forma de Processamento:"
-
-                                @ 130,085       COMBOBOX _oCboFormaProce          ;
-                                                VAR     _cFormaProce              ;
-                                                ITEMS   {  "1 - Do Maior p/ Menor", "2 - Do Menor p/ Maior" }  ;
-                                                SIZE    70,20                     ;
-                                                PIXEL                             ;
-                                                OF      _oDlg1
-
-                                @ 150,018       SAY     "Fill Rate:"
-                                @ 150,085       COMBOBOX _oCboFilRate             ;
+                                @ 130,018       SAY     "Fill Rate:"
+                                @ 130,085       COMBOBOX _oCboFilRate             ;
                                                 VAR     _cFilRate                 ;
                                                 ITEMS   {  "1 - Sim", "2 - Nao" } ;
                                                 SIZE    40,20                     ;
                                                 PIXEL                             ;
                                                 OF      _oDlg1
 
-                                @ 170,018       SAY     "Valida Peso:  : "
-                                @ 170,085       COMBOBOX _oCboVldPeso             ;
+                                @ 150,018       SAY     "Valida Peso:  : "
+                                @ 150,085       COMBOBOX _oCboVldPeso             ;
                                                 VAR     _cVldPeso                 ;
                                                 ITEMS   {  "1 - Sim", "2 - Nao" } ;
                                                 SIZE    40,20                     ;
                                                 PIXEL                             ;
                                                 OF      _oDlg1
 
-                                @ 190,018       SAY     "Motivo Corte:"
-                                @ 190,085       COMBOBOX _oCboMotivoCorte         ;
+                                @ 170,018       SAY     "Motivo Corte:"
+                                @ 170,085       COMBOBOX _oCboMotivoCorte         ;
                                                 VAR      _cCboMotivoCorte         ;
                                                 ITEMS   _aTblMotvCort             ;
                                                 SIZE    90,20                     ;
                                                 PIXEL                             ;
                                                 OF      _oDlg1
 
-                                @ 210,018       SAY     "Percentual Corte:"
-                                @ 210,085       GET     _nPercCorte               ;
+                                @ 190,018       SAY     "Percentual Corte:"
+                                @ 190,085       GET     _nPercCorte               ;
                                                 PICTURE "@E 999"+"%"              ;
                                                 SIZE    40,20                     ;
                                                 VALID   iif( _nPercCorte > 0 .and. _nPercCorte <= 100, .T., ( msgAlert("Percentual de corte incorreto !","Atencao"), .F. ) )
 
 
-                                @ 240,110 BMPBUTTON TYPE 01 ACTION ( _nFase++, Close(_oDlg1) )
-                                @ 240,140 BMPBUTTON TYPE 02 ACTION ( _nFase--, _lContinua := .F., Close(_oDlg1) )
+                                @ 210,110 BMPBUTTON TYPE 01 ACTION ( _nFase++, Close(_oDlg1) )
+                                @ 210,140 BMPBUTTON TYPE 02 ACTION ( _nFase--, _lContinua := .F., Close(_oDlg1) )
 
                                 ACTIVATE  DIALOG _oDlg1 CENTER
 
@@ -241,49 +230,52 @@ private lMsErroAuto := .F.
 
                                         _cArqQRY := GetNextAlias()
 
-                                        _cQuery := " SELECT SC5.C5_NUM PEDIDO, SC5.C5_TIPO TIPO_PEDIDO, SC5.C5_X_MAN MANIFESTO, SC5.C5_CONDPAG CONDPAG, "           + Chr(13)+Chr(10)
-                                        _cQuery += "        SC5.R_E_C_N_O_ RECNO, SB1.B1_DESC DESCRICAO, SB1.B1_PESO PESO_PRODUTO, SB1.B1_CONV QTD_CAIXA, "         + Chr(13)+Chr(10)
-                                        _cQuery += "        SC6.C6_PRODUTO PRODUTO,  SC6.C6_ITEM ITEM_PRODUTO, SC6.C6_X_MTVCT MOT_CORTE, SC6.C6_QTDVEN VENDIDO, "   + Chr(13)+Chr(10)
-                                        _cQuery += "        SC6.C6_QTDENT ENTREGUE, SC6.C6_TES TES, SC6.C6_PRCVEN PRECO_VENDA, SC6.C6_PRUNIT PRECO_UNITARIO, "      + Chr(13)+Chr(10)
-                                        _cQuery += "        SC6.C6_UNSVEN UNSVEN, SA1.A1_COD CODIGO, SA1.A1_LOJA LOJA, A1_NOME CLIENTE, SA1.A1_BAIRRO BAIRRO, "     + Chr(13)+Chr(10)
-                                        _cQuery += "        SA1.A1_MUN CIDADE, SA4.A4_X_PSMIN PESO_MINIMO_TRANSP"                                                          + Chr(13)+Chr(10)
-                                        _cQuery += "   FROM " + RetSqlName("SC5") + " SC5 (NOLOCK) "								    + Chr(13)+Chr(10)
-                                        _cQuery += "  INNER JOIN " + RetSqlName("SC6") + " SC6 (NOLOCK) ON SC6.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
+                                        _cQuery := " SELECT SC5.C5_NUM PEDIDO, SC5.C5_TIPO TIPO_PEDIDO, SC5.C5_X_MAN MANIFESTO, SC5.C5_CONDPAG CONDPAG, "         + Chr(13)+Chr(10)
+                                        _cQuery += "        SC5.R_E_C_N_O_ RECNO, SB1.B1_DESC DESCRICAO, SB1.B1_PESO PESO_PRODUTO, SB1.B1_CONV QTD_CAIXA, "       + Chr(13)+Chr(10)
+                                        _cQuery += "        SC6.C6_PRODUTO PRODUTO,  SC6.C6_ITEM ITEM_PRODUTO, SC6.C6_X_MTVCT MOT_CORTE, SC6.C6_QTDVEN VENDIDO, " + Chr(13)+Chr(10)
+                                        _cQuery += "        SC6.C6_QTDENT ENTREGUE, SC6.C6_TES TES, SC6.C6_PRCVEN PRECO_VENDA, SC6.C6_PRUNIT PRECO_UNITARIO, "    + Chr(13)+Chr(10)
+                                        _cQuery += "        SC6.C6_UNSVEN UNSVEN, SA1.A1_COD CODIGO, SA1.A1_LOJA LOJA, A1_NOME CLIENTE, SA1.A1_BAIRRO BAIRRO, "   + Chr(13)+Chr(10)
+                                        _cQuery += "        SA1.A1_MUN CIDADE, SA4.A4_X_PSMIN PESO_MINIMO_TRANSP"                                                 + Chr(13)+Chr(10)
+                                        _cQuery += "   FROM " + RetSqlName("SC5") + " SC5 (NOLOCK) "								                                              + Chr(13)+Chr(10)
+                                        _cQuery += "  INNER JOIN " + RetSqlName("SC6") + " SC6 (NOLOCK) ON SC6.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
                                         _cQuery += "                               AND SC6.C6_FILIAL = '" + xFilial("SC6") + "' AND SC5.C5_NUM = SC6.C6_NUM"	    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SC5.C5_NUM = SC6.C6_NUM"						            + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SC6.C6_BLQ NOT IN('S ')"					                    + Chr(13)+Chr(10)
-                                        _cQuery += "  INNER JOIN " + RetSqlName("SB1") + " SB1 (NOLOCK) ON SB1.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SB1.B1_FILIAL = '" + xFilial("SB1") + "'"		                    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SC6.C6_PRODUTO = SB1.B1_COD"					            + Chr(13)+Chr(10)
-                                        _cQuery += "  INNER JOIN " + RetSqlName("SA1") + " SA1 (NOLOCK) ON SA1.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SA1.A1_FILIAL = '" + xFilial("SA1") + "'"		                    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SA1.A1_COD = SC5.C5_CLIENTE"					            + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SA1.A1_LOJA = SC5.C5_LOJACLI"					            + Chr(13)+Chr(10)
-                                        _cQuery += "  LEFT JOIN " + RetSqlName("SA4") + " SA4 (NOLOCK) ON SA4.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SA4.A4_FILIAL = '" + xFilial("SA4") + "'"		                    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SA4.A4_COD = SC5.C5_TRANSP"					            + Chr(13)+Chr(10)
-                                        _cQuery += "  LEFT JOIN " + RetSqlName("Z20") + " Z20 (NOLOCK) ON Z20.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND Z20.Z20_FILIAL = '" + xFilial("Z20") + "'"		                    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND Z20.Z20_NUMERO = SC5.C5_X_MAN"					            + Chr(13)+Chr(10)
-                                        _cQuery += "  LEFT JOIN " + RetSqlName("SZP") + " SZP (NOLOCK) ON SZP.D_E_L_E_T_ = ''"					    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SZP.ZP_FILIAL = '" + xFilial("SZP") + "'"		                    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SZP.ZP_PEDIDO = SC5.C5_NUM"					            + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SZP.ZP_STATUS = 'Liberado' "                                                 + Chr(13)+Chr(10)
-                                        _cQuery += "  LEFT OUTER JOIN " + RetSqlName("SC9") + " SC9 (NOLOCK) ON SC9.D_E_L_E_T_ = ''"			            + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SC9.C9_FILIAL = '" + xFilial("SC9") + "'"		                    + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SC9.C9_PEDIDO = SC5.C5_NUM"					            + Chr(13)+Chr(10)
-                                        _cQuery += "                               AND SC9.C9_ITEM = SC6.C6_ITEM"					            + Chr(13)+Chr(10)
-                                        _cQuery += "  WHERE SC5.D_E_L_E_T_ <> '*' "						                                    + Chr(13)+Chr(10)
-                                        _cQuery += "        AND SC5.C5_FILIAL = '" + xFilial("SC5") + "'"						            + Chr(13)+Chr(10)
-                                        _cQuery += "        AND SC5.C5_NUM >= '" + _cPedidoDe + "'"					                            + Chr(13)+Chr(10)
-                                        _cQuery += "        AND SC5.C5_NUM <= '" + _cPedidoAte + "'"						                    + Chr(13)+Chr(10)
-                                        _cQuery += "        AND SC5.C5_EMISSAO BETWEEN '" + dToS(_dEmissaoDe) + "' AND '" + dToS(_dEmissaoAte) + "'"                + Chr(13)+Chr(10)
-                                        _cQuery += "        AND SC5.C5_NOTA = ' '"                                                                                  + Chr(13)+Chr(10)
-                                        _cQuery += "        AND SC5.C5_BLQ = ' '"                                                                                   + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SC5.C5_NUM = SC6.C6_NUM"						                                        + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SC6.C6_BLQ NOT IN('S ')"					                                          + Chr(13)+Chr(10)
+                                        _cQuery += "  INNER JOIN " + RetSqlName("SB1") + " SB1 (NOLOCK) ON SB1.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SB1.B1_FILIAL = '" + xFilial("SB1") + "'"		                              + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SC6.C6_PRODUTO = SB1.B1_COD"					                                      + Chr(13)+Chr(10)
+                                        _cQuery += "  INNER JOIN " + RetSqlName("SA1") + " SA1 (NOLOCK) ON SA1.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SA1.A1_FILIAL = '" + xFilial("SA1") + "'"		                              + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SA1.A1_COD = SC5.C5_CLIENTE"					                                      + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SA1.A1_LOJA = SC5.C5_LOJACLI"					                                    + Chr(13)+Chr(10)
+                                        if Left( _cFilRate, 1 ) == "1"
+                                            _cQuery += "                               AND SA1.A1_X_FRATE <> 'S'"					                                        + Chr(13)+Chr(10)
+                                        Endif
+                                        _cQuery += "  LEFT JOIN " + RetSqlName("SA4") + " SA4 (NOLOCK) ON SA4.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SA4.A4_FILIAL = '" + xFilial("SA4") + "'"		                              + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SA4.A4_COD = SC5.C5_TRANSP"					                                      + Chr(13)+Chr(10)
+                                        _cQuery += "  LEFT JOIN " + RetSqlName("Z20") + " Z20 (NOLOCK) ON Z20.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND Z20.Z20_FILIAL = '" + xFilial("Z20") + "'"		                              + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND Z20.Z20_NUMERO = SC5.C5_X_MAN"					                                    + Chr(13)+Chr(10)
+                                        _cQuery += "  LEFT JOIN " + RetSqlName("SZP") + " SZP (NOLOCK) ON SZP.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SZP.ZP_FILIAL = '" + xFilial("SZP") + "'"		                              + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SZP.ZP_PEDIDO = SC5.C5_NUM"					                                      + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SZP.ZP_STATUS = 'Liberado' "                                               + Chr(13)+Chr(10)
+                                        _cQuery += "  LEFT OUTER JOIN " + RetSqlName("SC9") + " SC9 (NOLOCK) ON SC9.D_E_L_E_T_ = ''"			                        + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SC9.C9_FILIAL = '" + xFilial("SC9") + "'"		                              + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SC9.C9_PEDIDO = SC5.C5_NUM"					                                      + Chr(13)+Chr(10)
+                                        _cQuery += "                               AND SC9.C9_ITEM = SC6.C6_ITEM"					                                        + Chr(13)+Chr(10)
+                                        _cQuery += "  WHERE SC5.D_E_L_E_T_ <> '*' "						                                                                    + Chr(13)+Chr(10)
+                                        _cQuery += "        AND SC5.C5_FILIAL = '" + xFilial("SC5") + "'"						                                              + Chr(13)+Chr(10)
+                                        _cQuery += "        AND SC5.C5_NUM >= '" + _cPedidoDe + "'"					                                                      + Chr(13)+Chr(10)
+                                        _cQuery += "        AND SC5.C5_NUM <= '" + _cPedidoAte + "'"						                                                  + Chr(13)+Chr(10)
+                                        _cQuery += "        AND SC5.C5_EMISSAO BETWEEN '" + dToS(_dEmissaoDe) + "' AND '" + dToS(_dEmissaoAte) + "'"              + Chr(13)+Chr(10)
+                                        _cQuery += "        AND SC5.C5_NOTA = ' '"                                                                                + Chr(13)+Chr(10)
+                                        _cQuery += "        AND SC5.C5_BLQ = ' '"                                                                                 + Chr(13)+Chr(10)
                                         if .not. Empty( _cManiDe ) .or. .not. Empty( _cManiAte )
-                                                _cQuery += "        AND SC5.C5_X_MAN BETWEEN '" + _cManiDe + "' AND '" + _cManiAte + "'"                         + Chr(13)+Chr(10)
+                                            _cQuery += "        AND SC5.C5_X_MAN BETWEEN '" + _cManiDe + "' AND '" + _cManiAte + "'"                              + Chr(13)+Chr(10)
                                         EndIf
-                                        _cQuery += "  ORDER BY SC5.C5_FILIAL, SC5.C5_NUM "                                                                       + Chr(13)+Chr(10)
+                                        _cQuery += "  ORDER BY SC5.C5_FILIAL, SC5.C5_NUM "                                                                        + Chr(13)+Chr(10)
 
                                         _cQuery := ChangeQuery( _cQuery )
 
@@ -384,12 +376,9 @@ private lMsErroAuto := .F.
                                                 AEval( _aStep2, { |xItem| xItem[ pST2_CORTE ]        := iif( xItem[ pST2_SALDO_CORTE ] > 0, xItem[ pST2_CORTE ],        _oNo )} )
                                                 AEval( _aStep2, { |xItem| xItem[ pST2_MOTIVO_CORTE ] := iif( xItem[ pST2_SALDO_CORTE ] > 0, xItem[ pST2_MOTIVO_CORTE ], '  ' )} )
 
-                                                // Define a ordem de exibicao dos dados
-                                                if Left( _cFormaProce, 1 ) == "1"
-                                                        _aStep2 := aSort( _aStep2, , , {|x,y| x[ pST2_PRODUTO ] + Str( x[ pST2_SALDO_CORTE ] ) > y[ pST2_PRODUTO ] + Str( y[ pST2_SALDO_CORTE ] ) } )
-                                                else
-                                                        _aStep2 := aSort( _aStep2, , , {|x,y| x[ pST2_PRODUTO ] + Str( x[ pST2_SALDO_CORTE ] ) < y[ pST2_PRODUTO ] + Str( y[ pST2_SALDO_CORTE ] ) } )
-                                                endif
+
+                                                // Informa ao sistema que o sistema deve exibir por ordem de produtos
+                                                _aStep2 := aSort( _aStep2, , , {|x,y| x[ pST2_PRODUTO ] + Str( x[ pST2_SALDO_CORTE ] ) > y[ pST2_PRODUTO ] + Str( y[ pST2_SALDO_CORTE ] ) } )
 
 
                                                 // Monta a Janela para Exibicao dos dados
@@ -593,14 +582,8 @@ private lMsErroAuto := .F.
                                         //
                                         if len( _aStep3 ) > 0
 
-                                                //
                                                 // Define a ordem de exibicao dos produtos na grade.
-                                                //
-                                                if Left( _cFormaProce, 1 ) == "1"
-                                                        _aStep3 := aSort( _aStep3, , , {|x,y| x[ pST3_QTDE_DISP ] > y[ pST3_QTDE_DISP ]})
-                                                else
-                                                        _aStep3 := aSort( _aStep3, , , {|x,y| x[ pST3_QTDE_DISP ] < y[ pST3_QTDE_DISP ]})
-                                                endif
+                                                _aStep3 := aSort( _aStep3, , , {|x,y| x[ pST3_QTDE_DISP ] > y[ pST3_QTDE_DISP ]})
 
                                                 DEFINE MSDIALOG _oDlg3 FROM 0,0 TO _aSize[6], _aSize[5] TITLE OemToAnsi( 'SELECAO DE PRODUTOS - STEP 3' ) Of oMainWnd PIXEL
 
