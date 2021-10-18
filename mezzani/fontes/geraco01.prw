@@ -61,6 +61,9 @@
 #DEFINE pST3_PESO_PRODUTO                12
 #DEFINE pST3_PESO_ATUAL                  13
 #DEFINE pST3_QTD_CAIXA                   14
+#DEFINE pST3_COD_CLIENTE                 15
+#DEFINE pST3_COD_LOJA                    16
+#DEFINE pST3_PESO_ACUMULADO              17
 
 
 
@@ -522,8 +525,8 @@ private lMsErroAuto := .F.
                                                                                             _aPedidos[ _nPos ][ pPED_COD_PROD ],                            ;   // PRODUTO
                                                                                             _aPedidos[ _nPos ][ pPED_DESC_PROD ],                           ;   // DESCRICAO
                                                                                             '(' + _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ] + '-' +         ;
-                                                                                            _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
-                                                                                            Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
+                                                                                                  _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE  ] + ')' +          ;
+                                                                                                  Alltrim( _aPedidos[ _nPos ][ pPED_NOME_CLIENTE ] ),       ;   // (COD+LOJA+CLIENTE)
                                                                                             _aPedidos[ _nPos ][ pPED_BAIRRO_CLIENTE ],                      ;   // BAIRRO
                                                                                             _aPedidos[ _nPos ][ pPED_CIDADE_CLIENTE ],                      ;   // CIDADE
                                                                                             _aPedidos[ _nPos ][ pPED_PEDIDO ],                              ;   // PEDIDO
@@ -533,7 +536,10 @@ private lMsErroAuto := .F.
                                                                                             _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ],          ;   // PESO MINIMO PRODUTO TRANSPORTADORA
                                                                                             _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ],                        ;   // PESO PRODUTO
                                                                                             _nPesoAtual,                                                    ;   // PESO ATUAL
-                                                                                            _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]                        ;   // QUANTIDADE CAIXA
+                                                                                            _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ],                       ;   // QUANTIDADE CAIXA
+                                                                                            _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ],                      ;   // CODIGO CLIENTE
+                                                                                            _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE ],                        ;   // CODIGO LOJA
+                                                                                            0                                                               ;   // PESO ACUMULADO
                                                                                     } )
                                                             Else
                                                                     _lValidPesoTransp := .T.
@@ -561,7 +567,10 @@ private lMsErroAuto := .F.
                                                                                     _aPedidos[ _nPos ][ pPED_PESO_MINIMO_PRODUTO_TRANSP ],          ;   // PESO MINIMO PRODUTO TRANSPORTADORA
                                                                                     _aPedidos[ _nPos ][ pPED_PESO_PRODUTO ],                        ;   // PESO PRODUTO
                                                                                     _nPesoAtual,                                                    ;   // PESO ATUAL
-                                                                                    _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ]                        ;   // QUANTIDADE CAIXA
+                                                                                    _aPedidos[ _nPos ][ pPED_CAIXA_PRODUTO ],                       ;   // QUANTIDADE CAIXA
+                                                                                    _aPedidos[ _nPos ][ pPED_CODIGO_CLIENTE ],                      ;   // CODIGO CLIENTE
+                                                                                    _aPedidos[ _nPos ][ pPED_LOJA_CLIENTE ],                        ;   // CODIGO LOJA
+                                                                                    0                                                               ;   // PESO ACUMULADO
                                                                             } )
                                                         EndIf
 
@@ -582,7 +591,97 @@ private lMsErroAuto := .F.
                                         //
                                         if len( _aStep3 ) > 0
 
+                                                //
+                                                // Apos a selecao de registro, selecionar os produtos e pedidos 
+                                                //
+                                                for _nPos := 1 to len( _aStep3 )
+
+                                                    _cArqQRY := GetNextAlias()
+
+                                                    _cQuery := " SELECT SC5.C5_NUM PEDIDO, SC5.C5_TIPO TIPO_PEDIDO, SC5.C5_X_MAN MANIFESTO, "         + Chr(13)+Chr(10)
+                                                    _cQuery += "        SB1.B1_DESC DESCRICAO, SB1.B1_PESO PESO_PRODUTO, SB1.B1_CONV QTD_CAIXA, "       + Chr(13)+Chr(10)
+                                                    _cQuery += "        SC6.C6_PRODUTO PRODUTO,  SC6.C6_ITEM ITEM_PRODUTO, SC6.C6_QTDVEN VENDIDO, " + Chr(13)+Chr(10)
+                                                    _cQuery += "        SC6.C6_QTDENT ENTREGUE, "    + Chr(13)+Chr(10)
+                                                    _cQuery += "        SA1.A1_COD CODIGO, SA1.A1_LOJA LOJA, A1_NOME CLIENTE, SA1.A1_BAIRRO BAIRRO, "   + Chr(13)+Chr(10)
+                                                    _cQuery += "        SA1.A1_MUN CIDADE, SA4.A4_X_PSMIN PESO_MINIMO_TRANSP"                                                 + Chr(13)+Chr(10)
+                                                    _cQuery += "   FROM " + RetSqlName("SC5") + " SC5 (NOLOCK) "								                                              + Chr(13)+Chr(10)
+                                                    _cQuery += "  INNER JOIN " + RetSqlName("SC6") + " SC6 (NOLOCK) ON SC6.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SC6.C6_FILIAL = '" + xFilial("SC6") + "' AND SC5.C5_NUM = SC6.C6_NUM"	    + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SC5.C5_NUM = SC6.C6_NUM"						                                        + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SC6.C6_BLQ NOT IN('S ')"					                                          + Chr(13)+Chr(10)
+                                                    _cQuery += "  INNER JOIN " + RetSqlName("SB1") + " SB1 (NOLOCK) ON SB1.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SB1.B1_FILIAL = '" + xFilial("SB1") + "'"		                              + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SC6.C6_PRODUTO = SB1.B1_COD"					                                      + Chr(13)+Chr(10)
+                                                    _cQuery += "  INNER JOIN " + RetSqlName("SA1") + " SA1 (NOLOCK) ON SA1.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SA1.A1_FILIAL = '" + xFilial("SA1") + "'"		                              + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SA1.A1_COD = SC5.C5_CLIENTE"					                                      + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SA1.A1_LOJA = SC5.C5_LOJACLI"					                                    + Chr(13)+Chr(10)
+                                                    if Left( _cFilRate, 1 ) == "1"
+                                                        _cQuery += "                               AND SA1.A1_X_FRATE <> 'S'"					                                        + Chr(13)+Chr(10)
+                                                    Endif
+                                                    _cQuery += "  LEFT JOIN " + RetSqlName("SA4") + " SA4 (NOLOCK) ON SA4.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SA4.A4_FILIAL = '" + xFilial("SA4") + "'"		                              + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SA4.A4_COD = SC5.C5_TRANSP"					                                      + Chr(13)+Chr(10)
+                                                    _cQuery += "  LEFT JOIN " + RetSqlName("Z20") + " Z20 (NOLOCK) ON Z20.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND Z20.Z20_FILIAL = '" + xFilial("Z20") + "'"		                              + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND Z20.Z20_NUMERO = SC5.C5_X_MAN"					                                    + Chr(13)+Chr(10)
+                                                    _cQuery += "  LEFT JOIN " + RetSqlName("SZP") + " SZP (NOLOCK) ON SZP.D_E_L_E_T_ = ''"					                          + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SZP.ZP_FILIAL = '" + xFilial("SZP") + "'"		                              + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SZP.ZP_PEDIDO = SC5.C5_NUM"					                                      + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SZP.ZP_STATUS = 'Liberado' "                                               + Chr(13)+Chr(10)
+                                                    _cQuery += "  LEFT OUTER JOIN " + RetSqlName("SC9") + " SC9 (NOLOCK) ON SC9.D_E_L_E_T_ = ''"			                        + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SC9.C9_FILIAL = '" + xFilial("SC9") + "'"		                              + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SC9.C9_PEDIDO = SC5.C5_NUM"					                                      + Chr(13)+Chr(10)
+                                                    _cQuery += "                               AND SC9.C9_ITEM = SC6.C6_ITEM"					                                        + Chr(13)+Chr(10)
+                                                    _cQuery += "  WHERE SC5.D_E_L_E_T_ <> '*' "						                                                                    + Chr(13)+Chr(10)
+                                                    _cQuery += "        AND SC5.C5_FILIAL = '" + xFilial("SC5") + "'"						                                              + Chr(13)+Chr(10)
+                                                    _cQuery += "        AND SC5.C5_NOTA = ' '"                                                                                + Chr(13)+Chr(10)
+                                                    _cQuery += "        AND SC5.C5_BLQ = ' '"                                                                                 + Chr(13)+Chr(10)
+                                                    _cQuery += "        AND SC5.C5_EMISSAO BETWEEN '" + dToS(_dEmissaoDe) + "' AND '" + dToS(_dEmissaoAte) + "'"              + Chr(13)+Chr(10)
+                                                    _cQuery += "        AND SA1.A1_FILIAL = '" + xFilial("SA1") + "'"						                                              + Chr(13)+Chr(10)
+                                                    _cQuery += "        AND SA1.A1_COD = '" + _aStep3[ _nPos ][ pST3_COD_CLIENTE ] + "'"						                          + Chr(13)+Chr(10)
+                                                    _cQuery += "        AND SA1.A1_LOJA = '" + _aStep3[ _nPos ][ pST3_COD_LOJA ] + "'"						                            + Chr(13)+Chr(10)
+                                                    _cQuery += "  ORDER BY SC5.C5_FILIAL, SC5.C5_NUM "                                                                        + Chr(13)+Chr(10)
+
+                                                    _cQuery := ChangeQuery( _cQuery )
+
+                                                    TCQUERY _cQuery Alias (_cArqQRY) New
+
+                                                    (_cArqQRY)->( dbGoTop() )
+                                                    If ! (_cArqQRY)->( Eof() )
+
+                                                        _nSomaPeso := 0                                                    
+
+                                                        while (_cArqQRY)->( ! Eof() )
+
+                                                            _nPeso := 0
+
+                                                            if Ascan( _aStep3, { |x| alltrim(x[ pST3_PRODUTO ]) == alltrim((_cArqQRY)->PRODUTO) } ) == 0
+
+                                                                _nPeso := (_cArqQRY)->VENDIDO
+                                                                _nPeso := _nPeso * (_cArqQRY)->PESO_PRODUTO
+                                                                _nPeso := _nPeso * (_cArqQRY)->QTD_CAIXA
+
+                                                            Endif
+
+                                                            _nSomaPeso += _nPeso
+
+                                                            (_cArqQRY)->( dbSkip() )
+
+                                                        enddo
+
+                                                        _aStep3[ _nPos ][ pST3_PESO_ACUMULADO ] += _nSomaPeso
+
+                                                    EndIf
+
+                                                    (_cArqQRY)->( dbCloseArea() )
+
+                                                next
+
+
+                                                //
                                                 // Define a ordem de exibicao dos produtos na grade.
+                                                //
                                                 _aStep3 := aSort( _aStep3, , , {|x,y| x[ pST3_QTDE_DISP ] > y[ pST3_QTDE_DISP ]})
 
                                                 DEFINE MSDIALOG _oDlg3 FROM 0,0 TO _aSize[6], _aSize[5] TITLE OemToAnsi( 'SELECAO DE PRODUTOS - STEP 3' ) Of oMainWnd PIXEL
@@ -593,18 +692,19 @@ private lMsErroAuto := .F.
                                                         _oPainel3 := TPanel():New(060,000,,_oDlg3, NIL, .T., .F., NIL, NIL,_aSize[6]+39,_aSize[4]-60, .T., .F. )
                                                 endif
 
-                                                _oBrowStep3 := TwBrowse():New(005, 005, _aSize[6], _aSize[5],, {  " ",           ;
-                                                                                                                "PRODUTO",       ;
-                                                                                                                "DESCRICAO" ,    ;
-                                                                                                                "CLIENTE",       ;
-                                                                                                                "BAIRRO",        ;
-                                                                                                                "CIDADE",        ;
-                                                                                                                "PEDIDO",        ;
-                                                                                                                "MANITESTO",     ;
-                                                                                                                "QTDE DISP",     ;
-                                                                                                                "QTDE A CORTAR", ;
-                                                                                                                "PESO MIN",      ;
-                                                                                                                "PESO ATUAL"     ;
+                                                _oBrowStep3 := TwBrowse():New(005, 005, _aSize[6], _aSize[5],, {  " ",                ;
+                                                                                                                "PRODUTO",            ;
+                                                                                                                "DESCRICAO" ,         ;
+                                                                                                                "CLIENTE",            ;
+                                                                                                                "BAIRRO",             ;
+                                                                                                                "CIDADE",             ;
+                                                                                                                "PEDIDO",             ;
+                                                                                                                "MANITESTO",          ;
+                                                                                                                "QTDE DISP",          ;
+                                                                                                                "QTDE A CORTAR",      ;
+                                                                                                                "PESO MIN",           ;
+                                                                                                                "PESO ATUAL",         ;
+                                                                                                                "PESO TOTAL CLIENTE"  ;
                                                                                                                 },,_oPainel3,,,,,,,,,,,, .F.,, .T.,, .T.,,,)
 
                 /*                                _oBrowStep3:bLDblClick := {||   ( iif(  _aStep3[_oBrowStep3:nAt, pST3_CORTE ]:CNAME == "LBNO", ;
@@ -636,7 +736,8 @@ private lMsErroAuto := .F.
                                                                                         _aStep3[_oBrowStep3:nAt, pST3_QTDE_DISP                  ], ;
                                                                                         _aStep3[_oBrowStep3:nAt, pST3_QTDE_CORTE                 ], ;
                                                                                         _aStep3[_oBrowStep3:nAt, pST3_PESO_MINIMO_PRODUTO_TRANSP ], ;
-                                                                                        Transform( _aStep3[_oBrowStep3:nAt, pST3_PESO_ATUAL  ], PesqPict("SB1","B1_PESO") ) ;
+                                                                                        Transform( _aStep3[_oBrowStep3:nAt, pST3_PESO_ATUAL  ], PesqPict("SB1","B1_PESO") ),    ;
+                                                                                        Transform( _aStep3[_oBrowStep3:nAt, pST3_PESO_ACUMULADO  ], PesqPict("SB1","B1_PESO") ) ;
                                                                                 }       ;
                                                                         }
 
