@@ -33,17 +33,23 @@
 #DEFINE pXML_TOTAL_ARRAY             21
 
 
+/*/{Protheus.doc} IMPCTE - Rotina de Importacao de CTE
+	@author Edilson Nascimento
+	@since 01/01/2021
+/*/
 USER FUNCTION JOBIMPCTE()
 
-Local _cDirIn    := GetMv("MV_CTE_IN",, '/xmlcte/in/' )
-Local _cDirOut   := GetMv("MV_CTE_OUT",, '\xmlcte\out\' )
+Local _cDirIn     := GetMv("MV_CTE_IN",, '/xmlcte/in/' )
+local  _aArquivos := {}
+local  _aTam      := {}
+
 local _nHandle
 local _nPos
 local _nTam
 local _nBytesReads
-local _cXml
-local _cError    := ''
-local _cWarning  := ''
+local _cXML       := ''
+local _cError     := ''
+local _cWarning   := ''
 local _oXml
 local _aDadosCTE
 local _nCount
@@ -74,23 +80,24 @@ local _nValorLinha
 
 
 
- //   PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SM0", "SA1", "SE1", "SE9", "SEE", "ZPI", "SEA" MODULO "FIN"
+    PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SA1", "SA2", "SA4", "ZZ2", "Z30", "Z31", "Z32" MODULO "FAT"
 
 
-    If ( aFileXML := Directory( _cDirIn + '*.xml' ) )
+    // If ( aFileXML := Directory( _cDirIn + '*.xml','D' ) )
+    ADir( _cDirIn + '*.xml', _aArquivos, _aTam )
+    If Len( _aArquivos ) > 0
 
-        for _nPos  := 1 to len( aFileXML )
+        for _nPos  := 1 to len( _aArquivos )
 
-            If ( _nHandle := FOpen( aFileXML[ nPos ][ 1 ], FO_SHARED ) ) > 0
+            If ( _nHandle := FOpen( _cDirIn + _aArquivos[ _nPos ], FO_SHARED ) ) > 0
                 
                 // Dados do arquivo a ser processado
-                _nTam        := FSeek(nHandle, FS_SET, FS_END )
+                _nTam        := FSeek( _nHandle, FS_SET, FS_END )
                 FSeek( _nHandle, FS_SET, FS_SET )
-                _cXml        := Space( _nTam )                
-                _nBytesReads := fRead( _nHandle, @_cXms, _nTam )
-                FClose( _nHandle )
+                _cXML        := Space( _nTam )                
+                _nBytesReads := fRead( _nHandle, @_cXML, _nTam )
 
-                _oXml := XmlParser( _cXms, "_", @_cError, @_cWarning)
+                _oXml := XmlParser( _cXML, "_", @_cError, @_cWarning)
 
                 If Empty( _cError ) .and. Empty( _cWarning )
 
@@ -171,7 +178,7 @@ local _nValorLinha
                                         if Empty( _aDadosCTE[ pXML_CTE_CARGA           ] )
                                             _aDadosCTE[ pXML_CTE_CARGA           ] := 0
                                         Else
-                                            _aDadosCTE[ pXML_CTE_CARGA           ] := StrTran( cCTePCarga,",",".")
+                                            _aDadosCTE[ pXML_CTE_CARGA           ] := StrTran( _aDadosCTE[ pXML_CTE_CARGA           ],",",".")
                                         Endif
 
                                     Else
@@ -221,7 +228,6 @@ local _nValorLinha
 
                                         tcSQLExec( _cQuery )
                                         
-
                                         _nItem := 0
         
                                         for _nCount := 1 to Len( _aDadosCTE[ pXML_CTE_CHAVE_NFE       ] )
@@ -229,7 +235,7 @@ local _nValorLinha
                                             _cArqQRY := GetNextAlias()
 
                                             _cQuery := " SELECT SF2.R_E_C_N_O_ AS REG "
-                                            _cQuery += "   FROM " + RetSQLName('SF2') + " SF2 WITH (NOLOCK) "
+                                            _cQuery += "   FROM " + RetSQLName('SF2') + " SF2 "
                                             _cQuery += " WHERE SF2.D_E_L_E_T_ = ' ' AND SF2.F2_FILIAL = '" + xFilial('SF2') + "' "
                                             if _aDadosCTE[ pXML_CTE_CHAVE_NFE       ][ _nCount ][ 1] == 0
                                                 _cQuery += "   AND SF2.F2_SERIE = '001' "
@@ -238,7 +244,7 @@ local _nValorLinha
                                                 _cQuery += "   AND SF2.F2_SERIE = '"   + _aDadosCTE[ pXML_CTE_CHAVE_NFE       ][ _nCount ][ 2] + "' "
                                                 _cQuery += "   AND SF2.F2_DOC = '"     + _aDadosCTE[ pXML_CTE_CHAVE_NFE       ][ _nCount ][ 3] + "' "
                                                 _cQuery += "   AND SF2.F2_EMISSAO = '" + _aDadosCTE[ pXML_CTE_CHAVE_NFE       ][ _nCount ][ 4] + "' "
-                                                _cQuery += "   AND SF2.F2_VALMERC = "  + _aDadosCTE[ pXML_CTE_CHAVE_NFE       ][ _nCount ][ 5] 
+                                                _cQuery += "   AND SF2.F2_VALMERC = '" + _aDadosCTE[ pXML_CTE_CHAVE_NFE       ][ _nCount ][ 5] + "' "
                                             endif
 
                                             _cQuery := ChangeQuery( _cQuery )
@@ -339,7 +345,7 @@ local _nValorLinha
                                                               Z22->Z22_PBRUTO  := _aDadosCTE[ pXML_CTE_CARGA           ]
                                                               Z22->Z22_AICMS   := Val( _aDadosCTE[ pXML_CTE_ICMSA           ] )
                                                               Z22->Z22_VICMS   := Val( _aDadosCTE[ pXML_CTE_ICMSV           ] )
-                                                              Z22->Z22_XML     := _cXml
+                                                              Z22->Z22_XML     := _cXML
                                                               Z22->Z22_DTIMP   := _dDtImp
                                                               Z22->Z22_HRIMP   := _cHhImp
                                                               Z22->Z22_UIMP    := cUserName
@@ -350,16 +356,16 @@ local _nValorLinha
                                                               Z22->Z22_EUF     := _aDadosCTE[ pXML_END_TRANSPORTADORA  ][ 2]
                                                               Z22->Z22_ECEP    := _aDadosCTE[ pXML_END_TRANSPORTADORA  ][ 3]
                                                               // Mezzani
-                                                              Z22->Z22_RMUN    := _aDadosCTE[ pXML_CNPJ_REMETENTE      ][ 1]
-                                                              Z22->Z22_RUF     := _aDadosCTE[ pXML_CNPJ_REMETENTE      ][ 2]
-                                                              Z22->Z22_RCEP    := _aDadosCTE[ pXML_CNPJ_REMETENTE      ][ 3]
+                                                              Z22->Z22_RMUN    := _aDadosCTE[ pXML_END_REMETENTE       ][ 1]
+                                                              Z22->Z22_RUF     := _aDadosCTE[ pXML_END_REMETENTE       ][ 2]
+                                                              Z22->Z22_RCEP    := _aDadosCTE[ pXML_END_REMETENTE       ][ 3]
                                                               // Cliente
                                                               Z22->Z22_DMUN    := _aDadosCTE[ pXML_END_CLIENTE         ][1]
                                                               Z22->Z22_DUF     := _aDadosCTE[ pXML_END_CLIENTE         ][2]
                                                               Z22->Z22_DCEP    := _aDadosCTE[ pXML_END_CLIENTE         ][3]
                                                               // Distancias
-                                                              Z22->Z22_KMED    := Dintancia( _aDadosCTE[ pXML_END_TRANSPORTADORA  ], _aDadosCTE[ pXML_END_CLIENTE         ] )
-                                                              Z22->Z22_KMRD    := Dintancia( _aDadosCTE[ pXML_CNPJ_REMETENTE      ], _aDadosCTE[ pXML_END_CLIENTE         ] )
+                                                              Z22->Z22_KMED    := Distancia( _aDadosCTE[ pXML_END_TRANSPORTADORA  ], _aDadosCTE[ pXML_END_CLIENTE         ] )
+                                                              Z22->Z22_KMRD    := Distancia( _aDadosCTE[ pXML_END_REMETENTE       ], _aDadosCTE[ pXML_END_CLIENTE         ] )
                                                           Z22->( msUnlock() )
 
                                                     EndIf
@@ -485,12 +491,15 @@ local _nValorLinha
 
     EndIf
 
- //   RESET ENVIRONMENT
+    RESET ENVIRONMENT
 
 Return
 
 
-
+/*/{Protheus.doc} XMLEndereco - Rotina para desmebramento do endereco
+	@author Edilson Nascimento
+	@since 01/01/2021
+/*/
 STATIC FUNCTION XMLEndereco( oEndereco )
 
 Local _aRetValue := { '', '', '' }
@@ -514,8 +523,11 @@ Local _aRetValue := { '', '', '' }
 Return _aRetValue
 
 
-
-STATIC FUNCTION Dintancia( aOrigem, aDestino )
+/*/{Protheus.doc} XMLEndereco - Rotina para retornar a distancia entre enderecos
+	@author Edilson Nascimento
+	@since 01/01/2021
+/*/
+STATIC FUNCTION Distancia( aOrigem, aDestino )
 
 Local _nRetValue := 0
 Local _cOrigem
@@ -525,15 +537,15 @@ local _cQuery
 
 
     // Algum Campo Vazio .... não processa nada e retorna 0
-    if not. Empty( aOrigem[ 1]) .or. .not. Empty( aOrigem[ 2]) .or. .not. Empty( aDestino[ 1] ) .or. Empty( aDestino[ 2] )
+    if .not. Empty( aOrigem[ 1]) .or. .not. Empty( aOrigem[ 2]) .or. .not. Empty( aDestino[ 1] ) .or. Empty( aDestino[ 2] )
 
         _cArqQRY := GetNextAlias()
 
         _cQuery := " SELECT TOP 1 Z3.Z31_KM AS KM"
-        _cQuery += "   FROM " + RetSQLName("Z31") + " Z3 (NOLOCK) "
+        _cQuery += "   FROM " + RetSQLName("Z31") + " Z3 "
         _cQuery += " WHERE D_E_L_E_T_ = ' ' AND Z31_FILIAL = '" + xFilial("Z31") + "' "
         _cQuery += "       AND ( ( Z3.Z31_OMUN = '" + aOrigem[ 1] + "' AND Z3.Z31_OUF = '" + aOrigem[ 2] + "' AND Z3.Z31_DMUN = '" + aDestino[ 1] + "' AND Z3.Z31_DUF = '" + aDestino[ 2] + "' )"
-        _cQuery += "       OR   ( Z3.Z31_OMUN = '" + aDestino[ 1] + "' AND Z3.Z31_OUF = '" + aDestino[ 2] + "' AND Z3.Z31_DMUN = '" + aOrigem[ 1] + "' AND Z3.Z31_DUF = '" + aOrig[2] + "' ) ) "
+        _cQuery += "       OR   ( Z3.Z31_OMUN = '" + aDestino[ 1] + "' AND Z3.Z31_OUF = '" + aDestino[ 2] + "' AND Z3.Z31_DMUN = '" + aOrigem[ 1] + "' AND Z3.Z31_DUF = '" + aDestino[ 2] + "' ) ) "
     
         _cQuery := ChangeQuery( _cQuery )
 
@@ -541,14 +553,14 @@ local _cQuery
 
         // se encontrou uma referencia não precisa cadastrar
         if .not. (_cArqQRY)->( Eof() )
-            _nRetValue := XD->KM
+            _nRetValue := (_cArqQRY)->KM
         else 
 
-            cOrigem := iif( .not. Empty( aOrigem[ 2] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( aOrigem[ 2] ), '' )
-            cOrigem += iif( .not. Empty( aOrigem[ 1] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( aOrigem[ 1] ), '' )
+            _cOrigem := iif( .not. Empty( aOrigem[ 2] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( aOrigem[ 2] ), '' )
+            _cOrigem += iif( .not. Empty( aOrigem[ 1] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( aOrigem[ 1] ), '' )
 
-            cDestino := iif( .not. Empty( aDestino[ 2]), iif( Empty( _cDestino ), '', ',') + AllTrim( aDestino[ 2] ), '')
-            cDestino += iif( .not. Empty( aDestino[ 1]), iif( Empty( _cDestino ), '', ',') + AllTrim( aDestino[ 1] ) , '' )
+            _cDestino := iif( .not. Empty( aDestino[ 2]), iif( Empty( _cDestino ), '', ',') + AllTrim( aDestino[ 2] ), '')
+            _cDestino += iif( .not. Empty( aDestino[ 1]), iif( Empty( _cDestino ), '', ',') + AllTrim( aDestino[ 1] ) , '' )
 
 
             //// - Edilson - Implementar API
@@ -557,11 +569,11 @@ local _cQuery
             dbSelectArea("Z31")
             RecLock("Z31",.T.)
                 Z31->Z31_FILIAL := xFilial("Z31")
-                Z31->Z31_OMUN   := aOrigem[ 1]
-                Z31->Z31_OUF    := aOrigem[ 2]
+                Z31->Z31_OMUN   := _cOrigem
+                Z31->Z31_OUF    := _cOrigem
                 Z31->Z31_OCEP   := ''
-                Z31->Z31_DMUN   := aDestino[ 1]
-                Z31->Z31_DUF    := aDestino[ 2]
+                Z31->Z31_DMUN   := _cDestino
+                Z31->Z31_DUF    := _cDestino
                 Z31->Z31_DCEP   := ''
                 Z31->Z31_TEMPO  := 0
                 Z31->Z31_KM     := _nRetValue
@@ -574,3 +586,28 @@ local _cQuery
     EndIf
 
 Return _nRetValue
+
+
+
+
+User Function ShowCTE()		// 
+
+	//-- Declaracao de Variaveis - mBrowse.
+	Private aRotina 	:= MenuDef()				// Padronizacao para visualizacao no menu padrao.
+	Private cCadastro 	:= OemToAnsi("Monitor para integração CTE")		// Padrao para o mBrowse
+	Private cDelFunc 	:= ".T." 					// Validacao para a exclusao. Pode-se utilizar ExecBlock
+	Private lSeeAll		:= .T.						// Define se o browse mostrara todas (.T.) as filiais.
+	Private lChgAll		:= .T.						// Define se os registros de outras filiais poderao ser alterados (.T.).
+	Private nInterval	:= 999						// Quantidade de tempo passada para a funcao Timer.
+	Private cString 	:= "ZZ2"
+
+
+	//-- Abre a Tabela e posiciona no primeiro registro.
+	dbSelectArea(cString)
+	(cString)->(dbSetOrder(1))
+	(cString)->(dbGoTop())
+
+	//-- Interface com o usuario.
+	mBrowse( ,,,,cString,,,,,, /*aCores*/,,,,,,lSeeAll,lChgAll,,nInterval,,)
+
+Return()
