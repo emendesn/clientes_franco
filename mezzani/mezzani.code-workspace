@@ -14,7 +14,8 @@
 			"**/.vscode": true,
 			"**/include": true,
 			"smartclient.ini": true,
-			"**/smartclient": true
+			"**/smartclient25": true,
+      "**/smartclient33": true
     },
     "editor.tabSize": 2,
     "editor.detectIndentation": false
