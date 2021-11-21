@@ -1,6 +1,8 @@
-/contech/.vscode/launch.json
-contech/smartclient27
-contech/atualizacoes
-mezzani/smartclient25
-mezzani/smartclient27
-ottobock/smartclient
+.vscode/
+.vscode/launch.json
+contech/smartclient27/
+contech/atualizacoes/
+contech/include/
+mezzani/smartclient25/
+mezzani/smartclient33/
+/ottobock/
