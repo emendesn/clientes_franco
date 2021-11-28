@@ -39,9 +39,9 @@
 /*/
 USER FUNCTION JOBIMPCTE()
 
-Local _cDirIn     := GetMv("MV_CTE_IN",, '/xmlcte/in/' )
-local  _aArquivos := {}
-local  _aTam      := {}
+Local _cDirIn
+local _aArquivos := {}
+local _aTam      := {}
 
 local _nHandle
 local _nPos
@@ -80,10 +80,15 @@ local _nValorLinha
 
 
 
-    PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SA1", "SA2", "SA4", "ZZ2", "Z30", "Z31", "Z32" MODULO "FAT"
+    // PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SA1", "SA2", "SA4", "ZZ2", "Z30", "Z31", "Z32" MODULO "FAT"
+    PREPARE ENVIRONMENT EMPRESA "01" FILIAL "01" USER "admin" PASSWORD "2018@0521" TABLES "SA1", "SA2", "SA4", "ZZ2", "Z30", "Z31", "Z32" MODULO "FAT"
+
+    // Diretorio com os arquivos XML a processar
+    _cDirIn := SuperGetMV( "MV_CTE_IN",, "\xmlcte\in\")
+    _cDirOu := SuperGetMV( "MV_CTE_OU",, "\xmlcte\ou\")
+    _cDirEr := SuperGetMV( "MV_CTE_ER",, "\xmlcte\er\")
 
 
-    // If ( aFileXML := Directory( _cDirIn + '*.xml','D' ) )
     ADir( _cDirIn + '*.xml', _aArquivos, _aTam )
     If Len( _aArquivos ) > 0
 
@@ -112,11 +117,12 @@ local _nValorLinha
                                 .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE:_REM, "_ENDERREME")  == Nil 
 
                                 // Cliente
-                                if  .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE, "_DEST") == Nil .OR. ;
-                                    .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE:_DEST, "_ENDERDEST")  == Nil 
+                                if  .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE, "_DEST") == Nil .AND. ;
+                                    .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE:_DEST, "_ENDERDEST")  == Nil .AND. ;
+                                    .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE:_DEST, '_CNPJ' ) == Nil
 
-
-                                    _aDadosCTE := Array( pXML_TOTAL_ARRAY )
+                                    _cChave                                := ''
+                                    _aDadosCTE                             := Array( pXML_TOTAL_ARRAY )
                                     _aDadosCTE[ pXML_CTE_CHAVE_NFE       ] := { }
 
 
@@ -218,16 +224,16 @@ local _nValorLinha
                                     begin transaction
 
                                         /* ZERAR NOTAS e RATEIOS SSOCIADOS */    
-                                        _cQuery := " UPDATE " + RetSQLName("Z30")                                            + Chr(13)+Chr(10)
-                                        _cQuery += "    SET D_E_L_E_T_ = ' ', R_E_C_D_E_L = R_E_C_N_O_ "                     + Chr(13)+Chr(10)
-                                        _cQuery += "  WHERE D_E_L_E_T_ = ' '"                                                + Chr(13)+Chr(10)
-                                        _cQuery += "        AND Z30_FILIAL = '" + xFilial("Z30") + "'"                       + Chr(13)+Chr(10)
-                                        _cQuery += "        AND Z30_CTEID = '" + _aDadosCTE[ pXML_CTE_ID              ] + "' "                              + Chr(13)+Chr(10)
+                                        _cQuery := " UPDATE " + RetSQLName("Z30")
+                                        _cQuery += "    SET D_E_L_E_T_ = ' ', R_E_C_D_E_L_ = R_E_C_N_O_ "
+                                        _cQuery += "  WHERE D_E_L_E_T_ = ' '"
+                                        _cQuery += "        AND Z30_FILIAL = '" + xFilial("Z30") + "'"
+                                        _cQuery += "        AND Z30_CTEID = '" + _aDadosCTE[ pXML_CTE_ID              ] + "'"
 
-                                        _cQuery := ChangeQuery( _cQuery )
+                                        If ( tcSQLExec( _cQuery ) < 0)
+                                          conout( TcSQLError() )
+                                        EndIf
 
-                                        tcSQLExec( _cQuery )
-                                        
                                         _nItem := 0
         
                                         for _nCount := 1 to Len( _aDadosCTE[ pXML_CTE_CHAVE_NFE       ] )
@@ -247,9 +253,7 @@ local _nValorLinha
                                                 _cQuery += "   AND SF2.F2_VALMERC = '" + _aDadosCTE[ pXML_CTE_CHAVE_NFE       ][ _nCount ][ 5] + "' "
                                             endif
 
-                                            _cQuery := ChangeQuery( _cQuery )
-
-                                            TCQUERY _cQuery Alias (_cArqQRY) New
+                                            dbUseArea( .T., "TOPCONN", TCGENQRY( ,, ChangeQuery( _cQuery )), (_cArqQRY), .T., .T. )
 
                                             (_cArqQRY)->( dbGoTop() )
                                             If .not. (_cArqQRY)->( Eof() )
@@ -371,21 +375,20 @@ local _nValorLinha
                                                     EndIf
 
                                                     dbSelectArea('Z22')
-                                                    If( Z22->( dbSetOrder(2), dbSeek(FWxFilial('Z22') + _aDadosCTE[ pXML_CTE_ID              ] ) ) )
+                                                    If( Z22->( dbSetOrder(2), dbSeek( xFilial('Z22') + _aDadosCTE[ pXML_CTE_ID              ] ) ) )
 
                                                         /* ZERAR NOTAS e RATEIOS SSOCIADOS */    
-                                                        _cQuery := " UPDATE " + RetSQLName("Z30")                                            + Chr(13)+Chr(10)
-                                                        _cQuery += "    SET D_E_L_E_T_ = ' ', R_E_C_D_E_L = R_E_C_N_O_ "                     + Chr(13)+Chr(10)
-                                                        _cQuery += "  WHERE D_E_L_E_T_ = ' '"                                                + Chr(13)+Chr(10)
-                                                        _cQuery += "        AND Z30_FILIAL = '" + xFilial("Z30") + "'"                       + Chr(13)+Chr(10)
-                                                        _cQuery += "        AND Z30_CTEID = '" + _aDadosCTE[ pXML_CTE_ID              ] + "' "                              + Chr(13)+Chr(10)
+                                                        _cQuery := " UPDATE " + RetSQLName("Z30")
+                                                        _cQuery += "    SET D_E_L_E_T_ = ' ', R_E_C_D_E_L_ = R_E_C_N_O_ "
+                                                        _cQuery += "  WHERE D_E_L_E_T_ = ' '"
+                                                        _cQuery += "        AND Z30_FILIAL = '" + xFilial("Z30") + "'"
+                                                        _cQuery += "        AND Z30_CTEID = '" + _aDadosCTE[ pXML_CTE_ID              ] + "'"
 
-                                                        _cQuery := ChangeQuery( _cQuery )
-
-                                                        tcSQLExec( _cQuery )
+                                                        If ( tcSQLExec( _cQuery ) < 0)
+                                                          conout( TcSQLError() )
+                                                        EndIf
 
                                                     Else
-
 
                                                         _cArqQRY := GetNextAlias()
 
@@ -470,6 +473,14 @@ local _nValorLinha
 
                                     end transaction
 
+                                    //
+                                    // Arquivo processado com sucesso
+                                    //
+                                    FClose( _nHandle )
+                                    If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirOu + _aArquivos[ _nPos ] )
+                                      FErase( _cDirIn + _aArquivos[ _nPos ] )
+                                    Endif
+
                                 Endif
 
                             Endif
@@ -480,11 +491,28 @@ local _nValorLinha
 
                     EndIf
 
+                Else
+                    //
+                    // Caso Erro ao processar o arquivo XML, move para a pasta de erros
+                    //
+                    FClose( _nHandle )
+                    If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirEr + _aArquivos[ _nPos ] )
+                      FErase( _cDirIn + _aArquivos[ _nPos ] )
+                    Endif
                 EndIf
 
                 FClose( _nHandle )
 
-              EndIf
+            Else
+
+              //
+              // Caso tenha ocorrido algum erro na abertura do arquivo move para a pasta de erros
+              //
+              If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirEr + _aArquivos[ _nPos ] )
+                FErase( _cDirIn + _aArquivos[ _nPos ] )
+              Endif
+
+            EndIf
 
         next
 
@@ -539,13 +567,19 @@ local _cQuery
     // Algum Campo Vazio .... não processa nada e retorna 0
     if .not. Empty( aOrigem[ 1]) .or. .not. Empty( aOrigem[ 2]) .or. .not. Empty( aDestino[ 1] ) .or. Empty( aDestino[ 2] )
 
+        aOrigem[ 1]  := StrTran( aOrigem[ 1], "'", " ")
+        aOrigem[ 2]  := StrTran( aOrigem[ 2], "'", " ")
+
+        aDestino[ 1] := StrTran( aDestino[ 1], "'", " ")
+        aDestino[ 2] := StrTran( aDestino[ 2], "'", " ")
+
         _cArqQRY := GetNextAlias()
 
         _cQuery := " SELECT TOP 1 Z3.Z31_KM AS KM"
         _cQuery += "   FROM " + RetSQLName("Z31") + " Z3 "
         _cQuery += " WHERE D_E_L_E_T_ = ' ' AND Z31_FILIAL = '" + xFilial("Z31") + "' "
-        _cQuery += "       AND ( ( Z3.Z31_OMUN = '" + aOrigem[ 1] + "' AND Z3.Z31_OUF = '" + aOrigem[ 2] + "' AND Z3.Z31_DMUN = '" + aDestino[ 1] + "' AND Z3.Z31_DUF = '" + aDestino[ 2] + "' )"
-        _cQuery += "       OR   ( Z3.Z31_OMUN = '" + aDestino[ 1] + "' AND Z3.Z31_OUF = '" + aDestino[ 2] + "' AND Z3.Z31_DMUN = '" + aOrigem[ 1] + "' AND Z3.Z31_DUF = '" + aDestino[ 2] + "' ) ) "
+        _cQuery += "       AND ( ( Z3.Z31_OMUN = '" + NoAcento(aOrigem[ 1]) + "' AND Z3.Z31_OUF = '" + NoAcento(aOrigem[ 2]) + "' AND Z3.Z31_DMUN = '" + NoAcento(aDestino[ 1]) + "' AND Z3.Z31_DUF = '" + NoAcento(aDestino[ 2]) + "' )"
+        _cQuery += "       OR   ( Z3.Z31_OMUN = '" + NoAcento(aDestino[ 1]) + "' AND Z3.Z31_OUF = '" + NoAcento(aDestino[ 2]) + "' AND Z3.Z31_DMUN = '" + NoAcento(aOrigem[ 1]) + "' AND Z3.Z31_DUF = '" + NoAcento(aDestino[ 2]) + "' ) ) "
     
         _cQuery := ChangeQuery( _cQuery )
 
@@ -556,11 +590,11 @@ local _cQuery
             _nRetValue := (_cArqQRY)->KM
         else 
 
-            _cOrigem := iif( .not. Empty( aOrigem[ 2] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( aOrigem[ 2] ), '' )
-            _cOrigem += iif( .not. Empty( aOrigem[ 1] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( aOrigem[ 1] ), '' )
+            _cOrigem := iif( .not. Empty( aOrigem[ 2] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( NoAcento(aOrigem[ 2]) ), '' )
+            _cOrigem += iif( .not. Empty( aOrigem[ 1] ), iif( Empty( _cOrigem ), '', ',' ) + AllTrim( NoAcento(aOrigem[ 1]) ), '' )
 
-            _cDestino := iif( .not. Empty( aDestino[ 2]), iif( Empty( _cDestino ), '', ',') + AllTrim( aDestino[ 2] ), '')
-            _cDestino += iif( .not. Empty( aDestino[ 1]), iif( Empty( _cDestino ), '', ',') + AllTrim( aDestino[ 1] ) , '' )
+            _cDestino := iif( .not. Empty( aDestino[ 2]), iif( Empty( _cDestino ), '', ',') + AllTrim( NoAcento(aDestino[ 2]) ), '')
+            _cDestino += iif( .not. Empty( aDestino[ 1]), iif( Empty( _cDestino ), '', ',') + AllTrim( NoAcento(aDestino[ 1]) ) , '' )
 
 
             //// - Edilson - Implementar API
