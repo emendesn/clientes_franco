@@ -409,9 +409,7 @@ local _nValorLinha
                                                         _cQuery += "  GROUP BY SD2.D2_CCUSTO, CTT.CTT_DESC01 "
                                                         _cQuery += "  ORDER BY ROUND( SUM( SD2.D2_PESO ), 2, 1)"
 
-                                                        _cQuery := ChangeQuery( _cQuery )
-
-                                                        TCQUERY _cQuery Alias (_cArqQRY) New
+                                                        dbUseArea( .T., "TOPCONN", TCGENQRY( ,, ChangeQuery( _cQuery )), (_cArqQRY), .T., .T. )
 
                                                         (_cArqQRY)->( dbGoTop() )
                                                         If ! (_cArqQRY)->( Eof() )
@@ -581,9 +579,7 @@ local _cQuery
         _cQuery += "       AND ( ( Z3.Z31_OMUN = '" + NoAcento(aOrigem[ 1]) + "' AND Z3.Z31_OUF = '" + NoAcento(aOrigem[ 2]) + "' AND Z3.Z31_DMUN = '" + NoAcento(aDestino[ 1]) + "' AND Z3.Z31_DUF = '" + NoAcento(aDestino[ 2]) + "' )"
         _cQuery += "       OR   ( Z3.Z31_OMUN = '" + NoAcento(aDestino[ 1]) + "' AND Z3.Z31_OUF = '" + NoAcento(aDestino[ 2]) + "' AND Z3.Z31_DMUN = '" + NoAcento(aOrigem[ 1]) + "' AND Z3.Z31_DUF = '" + NoAcento(aDestino[ 2]) + "' ) ) "
     
-        _cQuery := ChangeQuery( _cQuery )
-
-        TCQUERY _cQuery Alias (_cArqQRY) New
+        dbUseArea( .T., "TOPCONN", TCGENQRY( ,, ChangeQuery( _cQuery )), (_cArqQRY), .T., .T. )
 
         // se encontrou uma referencia não precisa cadastrar
         if .not. (_cArqQRY)->( Eof() )
