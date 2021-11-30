@@ -78,6 +78,8 @@ local _nRateio
 local _nPrecoLinha
 local _nValorLinha
 
+local _lOk          := .F.
+
 
 
     // PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SA1", "SA2", "SA4", "ZZ2", "Z30", "Z31", "Z32" MODULO "FAT"
@@ -474,18 +476,13 @@ local _nValorLinha
                                     //
                                     // Arquivo processado com sucesso
                                     //
-                                    FClose( _nHandle )
-                                    If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirOu + _aArquivos[ _nPos ] )
-                                      FErase( _cDirIn + _aArquivos[ _nPos ] )
-                                    Endif
+                                    _lOk := .T.
 
                                 Endif
 
                             Endif
 
-
                         EndIf
-
 
                     EndIf
 
@@ -493,27 +490,40 @@ local _nValorLinha
                     //
                     // Caso Erro ao processar o arquivo XML, move para a pasta de erros
                     //
-                    FClose( _nHandle )
-                    If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirEr + _aArquivos[ _nPos ] )
-                      FErase( _cDirIn + _aArquivos[ _nPos ] )
-                    Endif
+                    _lOk := .F.                    
                 EndIf
 
                 FClose( _nHandle )
 
             Else
-
-              //
-              // Caso tenha ocorrido algum erro na abertura do arquivo move para a pasta de erros
-              //
-              If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirEr + _aArquivos[ _nPos ] )
-                FErase( _cDirIn + _aArquivos[ _nPos ] )
-              Endif
-
+                //
+                // Caso Erro ao processar o arquivo XML, move para a pasta de erros
+                //
+                _lOk := .F.
             EndIf
 
-        next
+            if _lOk
+                //
+                // Arquivo Processado Corretamente
+                //
 
+                EnvEmail( 2, _aArquivos[ _nPos ] )                
+                If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirOu + _aArquivos[ _nPos ] )
+                  FErase( _cDirIn + _aArquivos[ _nPos ] )
+                Endif
+
+            else
+                //
+                // Caso tenha ocorrido algum erro na abertura do arquivo move para a pasta de erros
+                //
+
+                EnvEmail( 1, _aArquivos[ _nPos ] )
+                If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirEr + _aArquivos[ _nPos ] )
+                    FErase( _cDirIn + _aArquivos[ _nPos ] )
+                Endif
+            Endif
+
+        next
 
     EndIf
 
@@ -616,6 +626,130 @@ local _cQuery
     EndIf
 
 Return _nRetValue
+
+
+/*/{Protheus.doc} XMLEndereco - Monta o email informando o status do arquivo importado
+	@author Edilson Nascimento
+	@since 29/11/2021
+/*/
+Static Procedure EnvEmail( nCodEnv, cNomeArq)
+
+Local cXServer 	:= SuperGetMV( "MV_RELACNT",, " ") // Conta de email para o envio
+Local cXConta  	:= SuperGetMV( "MV_RELAUSR",, " ") // Usuario para autenticacao na conta
+Local cPasswrd 	:= SuperGetMV( "MV_RELAPSW",, " ") // Senha para autenticacao no servidor de email
+Local cXDestin 	:= SuperGetMV( "MV_USR_ENV",, " ") // Relacao de usuario que irao recber o status do arquivo importado
+Local cEmRemet 	:= SuperGetMV( "MV_USR_REM",, " ") // Relacao do usuario que esta realizando o envio do status para o usuario
+
+
+    cHTML := '<!DOCTYPE html>'
+    cHTML += '<html>'
+    cHTML += '<head>'
+    cHTML += '<meta charset="UTF-8"/>'
+    cHTML += '<title>Importador CTE</title>'
+    cHTML += '</head>'
+    cHTML += '<body>; 
+      do case
+        case nCodEnv == 1
+          cHTML += 'Arquivo: ' + cNomeArq + ' - Importado Corretamente'
+        case nCodEnv == 2
+          cHTML += 'Arquivo: ' + cNomeArq + ' - Erro na Importacao'
+      endcase
+    cHTML += '</body>'
+    cHTML += '</html>'
+
+
+    EnvMailC(cXDestin , cXServer , cXConta , cEmRemet , cPasswrd , cHTML, cXAssunt)
+
+Return
+
+
+/*/{Protheus.doc} EnvMailC - Rotina para o envio do email para o usuario
+	@author Edilson Nascimento
+	@since 29/11/2021
+/*/
+STATIC PROCEDURE EnvMailC(cEmDest,cXServer,cXConta,cEmRemet,cPasswrd,cHTML,cXAssunt,lJob)
+
+	Local cUser := "", cPass := "", cSendSrv := ""
+	Local cMsg := ""
+	Local nSendPort := 0, nSendSec := 1, nTimeout := 0
+	Local xRet
+	Local oServer, oMessage
+
+
+	cUser 	  := cXConta  //define the e-mail account username
+	cPass 	  := cPasswrd //define the e-mail account password
+	cSendSrv 	:= cXServer // define the send server
+	cEmRemet	:= cEmRemet //define the e-mail remetente
+	nTimeout 	:= 60 // define the timout to 60 seconds
+
+	oServer := TMailManager():New()
+
+	oServer:SetUseSSL( .F. )
+	oServer:SetUseTLS( .F. )
+
+	if nSendSec == 0
+		nSendPort := 25
+	elseif nSendSec == 1
+		nSendPort := 465
+		oServer:SetUseSSL( .T. )
+	else
+		nSendPort := 587
+    oServer:SetUseSSL( .T. )
+	endif
+
+	xRet := oServer:Init( "", cSendSrv, cUser, cPass, , nSendPort )
+	if xRet != 0
+		cMsg := "Could not initialize SMTP server: " + oServer:GetErrorString( xRet )
+		conout( cMsg )
+		return
+	endif
+
+	xRet := oServer:SetSMTPTimeout( nTimeout )
+	if xRet != 0
+		cMsg := "Could not set " + cProtocol + " timeout to " + cValToChar( nTimeout )
+		conout( cMsg )
+		RETURN
+	ENDIF
+
+	xRet := oServer:SMTPConnect()
+	if xRet <> 0
+		cMsg := "Could not connect on SMTP server: " + oServer:GetErrorString( xRet )
+		conout( cMsg )
+		RETURN
+	ENDIF
+
+	xRet := oServer:SmtpAuth( cUser, cPass )
+	if xRet <> 0
+		cMsg := "Could not authenticate on SMTP server: " + oServer:GetErrorString( xRet )
+		conout( cMsg )
+		oServer:SMTPDisconnect()
+		RETURN
+	ENDIF
+
+	oMessage := TMailMessage():New()
+	oMessage:Clear()
+
+	//oMessage:cDate := DTOC(Date()) //cValToChar( Date() )
+	oMessage:cFrom := cEmRemet
+	oMessage:cTo 	 := cEmDest
+	oMessage:cSubject := cXAssunt
+	oMessage:cBody := cHTML
+
+	xRet := oMessage:Send( oServer )
+	if xRet <> 0
+		cMsg := "Could not send message: " + oServer:GetErrorString( xRet )
+		conout( cMsg )
+		RETURN
+	ENDIF
+
+	xRet := oServer:SMTPDisconnect()
+	if xRet <> 0
+		cMsg := "Could not disconnect from SMTP server: " + oServer:GetErrorString( xRet )
+		conout( cMsg )
+		RETURN
+	ENDIF
+
+return 
 
 
 
