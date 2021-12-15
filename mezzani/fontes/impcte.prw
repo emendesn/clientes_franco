@@ -827,7 +827,7 @@ User Function ShowCTE()
 
 	//Montando as cores da legenda
 	aAdd(aCores,{"Z22_STATUS == 'I' ", "BR_VERDE" })
-	aAdd(aCores,{"Z22_STATUS == ' ' ", "BR_VERMELHO" })o
+	aAdd(aCores,{"Z22_STATUS == ' ' ", "BR_VERMELHO" })
 	
 	//Selecionando a tabela e ordenando
 	DbSelectArea(cTabela)
