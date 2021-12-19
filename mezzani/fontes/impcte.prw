@@ -785,31 +785,10 @@ STATIC PROCEDURE EnvMailC(cEmDest,cXServer,cXConta,cEmRemet,cPasswrd,cHTML,cXAss
 return 
 
 
-
-/*
-User Function ShowCTE()		// 
-
-	//-- Declaracao de Variaveis - mBrowse.
-	Private aRotina 	:= MenuDef()				// Padronizacao para visualizacao no menu padrao.
-	Private cCadastro 	:= OemToAnsi("Monitor para integração CTE")		// Padrao para o mBrowse
-	Private cDelFunc 	:= ".T." 					// Validacao para a exclusao. Pode-se utilizar ExecBlock
-	Private lSeeAll		:= .T.						// Define se o browse mostrara todas (.T.) as filiais.
-	Private lChgAll		:= .T.						// Define se os registros de outras filiais poderao ser alterados (.T.).
-	Private nInterval	:= 999						// Quantidade de tempo passada para a funcao Timer.
-	Private cString 	:= "ZZ2"
-
-
-	//-- Abre a Tabela e posiciona no primeiro registro.
-	dbSelectArea(cString)
-	(cString)->(dbSetOrder(1))
-	(cString)->(dbGoTop())
-
-	//-- Interface com o usuario.
-	mBrowse( ,,,,cString,,,,,, /*aCores,,,,,,lSeeAll,lChgAll,,nInterval,,) */
-
-// Return() 
-
-
+/*/{Protheus.doc} ShowCTE - Exibe os dados dos CTE importados
+	@author Edilson Nascimento
+	@since 3/12/2021
+/*/
 User Function ShowCTE()
 
 	Local aArea       := GetArea()
@@ -819,11 +798,12 @@ User Function ShowCTE()
 	Private aRotina   := {}
 	
 	//Montando o Array aRotina, com funções que serão mostradas no menu
-	aAdd(aRotina,{"Pesquisar",  "AxPesqui", 0, 1})
-	aAdd(aRotina,{"Visualizar", "AxVisual", 0, 2})
-	// aAdd(aRotina,{"Incluir",    "AxInclui", 0, 3})
-	aAdd(aRotina,{"Alterar",    "AxAltera", 0, 4})
-	aAdd(aRotina,{"Excluir",    "AxDeleta", 0, 5})
+	aAdd(aRotina,{"Pesquisar",         "AxPesqui",     0, 1})
+	aAdd(aRotina,{"Visualizar",        "AxVisual",     0, 2})
+	// aAdd(aRotina,{"Incluir",          "AxInclui",     0, 3})
+	aAdd(aRotina,{"Alterar",           "AxAltera",     0, 4})
+	aAdd(aRotina,{"Excluir",           "AxDeleta",     0, 5})
+  aAdd(aRotina,{"Gerar Doc Entrada", "U_GerPreNota", 0, 6})
 
 	//Montando as cores da legenda
 	aAdd(aCores,{"Z22_STATUS == 'I' ", "BR_VERDE" })
@@ -834,10 +814,20 @@ User Function ShowCTE()
 	(cTabela)->(DbSetOrder(1))
 	
 	//Montando o Browse
-	mBrowse(6, 1, 22, 75, cArquivo, , , , , , aCores )
+	//mBrowse(6, 1, 22, 75, cArquivo, , , , , , aCores )
+  mBrowse(6, 1, 22, 75, cTabela, , , , , , aCores )
 	
 	//Encerrando a rotina
 	(cTabela)->(DbCloseArea())
 	RestArea(aArea)
+
+Return
+
+
+/*/{Protheus.doc} GerPreNota - Rotina para a geracao da Pre-Nota
+	@author Edilson Nascimento
+	@since 13/12/2021
+/*/
+User Function GerPreNota()
 
 Return
