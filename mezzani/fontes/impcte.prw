@@ -361,7 +361,7 @@ local _lOk          := .F.
                                                                       Z22->Z22_HRIMP   := _cHhImp
                                                                       Z22->Z22_UIMP    := cUserName
                                                                       Z22->Z22_VALOR   := Val( _aDadosCTE[ pXML_CTE_VALOR           ] )
-                                                                      Z22->Z22_STATUS  := 'I'
+                                                                      Z22->Z22_STATUS  := ' '
                                                                       // Transportadora
                                                                       Z22->Z22_EMUN    := _aDadosCTE[ pXML_END_TRANSPORTADORA  ][ 1]
                                                                       Z22->Z22_EUF     := _aDadosCTE[ pXML_END_TRANSPORTADORA  ][ 2]
@@ -829,5 +829,121 @@ Return
 	@since 13/12/2021
 /*/
 User Function GerPreNota()
+
+local _aCabec := {}
+local _aItens
+local _aLInha
+local _oXml
+local _cError
+local _cWarning
+local _nPos
+local _cPedido
+local _cProduto
+local _nQuant
+local _nVlrUni
+local _nVlrTot
+
+Local _aArea    := GetArea()
+
+private lMsErroAuto
+
+  If Empty( Z22->Z22_STATUS )
+
+    SF1->( dbSetOrder(1) ) 
+    If SF1->(dbSeek(xFilial("SF1")+PadR(Z22->Z22_DOC,TamSX3("F1_DOC")[1])+PadR(Z22->Z22_SERIE,TamSX3("F1_SERIE")[1])+PadR(Z22->Z22_FORNEC,TamSX3("F1_FORNECE")[1])+PadR(Z22->Z22_LOJAF,TamSX3("F1_LOJA")[1])+"N"))
+
+      begin sequence
+
+        aadd( _aCabec,{"F1_TIPO"   , "N"              , Nil, Nil})
+        aadd( _aCabec,{"F1_FORMUL" , "N"              , Nil, Nil})
+        aadd( _aCabec,{"F1_DOC"    , Z22->Z22_DOC     , Nil, Nil})
+        aadd( _aCabec,{"F1_CHVNFE" , Z22->Z22_CHAVE   , Nil, Nil})    
+        aadd( _aCabec,{"F1_SERIE"  , Z22->Z22_SERIE   , Nil, Nil})     
+        aadd( _aCabec,{"F1_EMISSAO", dDtEmissao       , Nil, Nil})
+        aadd( _aCabec,{"F1_FORNECE", Z22->Z22_FORNEC  , Nil, Nil})
+        aadd( _aCabec,{"F1_LOJA"   , Z22->Z22_LOJAF   , Nil, Nil})
+        aadd( _aCabec,{"F1_ESPECIE", "CTR"            , Nil, Nil})
+
+        _aItens 	:= {}
+        _cError   := ''
+        _cWarning := ''
+
+        _cPedido	:= ''
+        _cProduto := ''
+        _nQuant   := 0
+        _nVlrUni  := 0
+        _nVlrTot  := 0
+
+          _oXml := XmlParser( Z22->Z22_XML, "_", @_cError, @_cWarning)
+
+          if Empty( _cError ) .and. Empty( _cWarning )
+
+            If ValType( _oXml:_NFEPROC:_NFE:_INFNFE:_DET) == "O"			//-- So existe UM produto na Nota Fiscal
+
+                _cPedido	:= &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_XPED:TEXT")
+                _cProduto := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_CPROD:TEXT")
+                _nQuant   := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_QCOM:TEXT"))
+                _nVlrUni  := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_VUNCOM:TEXT"))
+                _nVlrTot  := _nQuant * _nVlrUni
+
+                _aLinha 	:= {}
+                aadd( _aLinha,{"D1_COD"   , _cProduto , Nil, Nil})
+                aadd( _aLinha,{"D1_QUANT" , _nQuant   , Nil, Nil})
+                aadd( _aLinha,{"D1_VUNIT" , _nVlrUni  , Nil, Nil})
+                aadd( _aLinha,{"D1_TOTAL" , _nVlrTot  , Nil, Nil})
+                aadd( _aLinha,{"D1_PEDIDO", _cPedido  , Nil, Nil})
+                aadd( _aLinha,{"D1_ITEMPC", "0001"    , Nil, Nil})
+                aadd( _aItens,aLinha)
+
+            ElseIf ValType( _oXml:_NFEPROC:_NFE:_INFNFE:_DET) == "A"		//-- Ha MAIS de UM Item da Nota Fiscal
+              For _nPos := 1 to Len(oXML:_NFEPROC:_NFE:_INFNFE:_DET)
+
+                _cItem	  := "[" + Alltrim( Str(_nPos) ) + "]"
+                _cPedido	:= &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_XPED:TEXT")
+                _cProduto := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_CPROD:TEXT")
+                _nQuant   := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_QCOM:TEXT"))
+                _nVlrUni  := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_VUNCOM:TEXT"))
+                _nVlrTot  := _nQuant * _nVlrUni
+
+                _aLinha 	:= {}
+                aadd( _aLinha,{"D1_COD"   , _cProduto , Nil, Nil})
+                aadd( _aLinha,{"D1_QUANT" , _nQuant   , Nil, Nil})
+                aadd( _aLinha,{"D1_VUNIT" , _nVlrUni  , Nil, Nil})
+                aadd( _aLinha,{"D1_TOTAL" , _nVlrTot  , Nil, Nil})
+                aadd( _aLinha,{"D1_PEDIDO", _cPedido  , Nil, Nil})
+                aadd( _aLinha,{"D1_ITEMPC", _cItem    , Nil, Nil})
+                aadd( _aItens, _aLinha)
+
+              Next
+            EndIf
+
+						lMsErroAuto := .F.
+
+						//-- Definicao para entrada por pre-nota.
+            MsgRun("Aguarde gerando Pré-Nota de Entrada...",,{|| MSExecAuto ( {|x,y,z| MATA140(x,y,z) }, _aCabec, _aItens, 3)})                             
+
+						If lMsErroAuto
+							MostraErro()
+						Else
+              RecLock("Z22",.F.)
+                  Z22->Z22_STATUS  := 'I'
+              Z22->(MsUnlock())     
+            Endif
+
+        Else
+          msgAlert("Nao foram encontrados itens a CTE!","Atencao")
+        EndIf
+
+      end sequence
+
+    Else
+      msgAlert("Nao foi encontrado o documento na tabela SF1 !","Atencao")
+    EndIf
+
+  Else
+    msgAlert("Documento ja gerado!","Atencao")
+  Endif
+
+  RestArea(_aArea)
 
 Return
