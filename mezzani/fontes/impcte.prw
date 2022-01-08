@@ -238,7 +238,7 @@ local _lOk          := .F.
                                                 _cQuery += "        AND Z30_CTEID = '" + _aDadosCTE[ pXML_CTE_ID              ] + "'"
 
                                                 If ( tcSQLExec( _cQuery ) < 0)
-                                                  conout( TcSQLError() )
+                                                    conout( TcSQLError() )
                                                 EndIf
 
                                                 _nItem := 0
@@ -803,7 +803,7 @@ User Function ShowCTE()
 	// aAdd(aRotina,{"Incluir",          "AxInclui",     0, 3})
 	aAdd(aRotina,{"Alterar",           "AxAltera",     0, 4})
 	aAdd(aRotina,{"Excluir",           "AxDeleta",     0, 5})
-  aAdd(aRotina,{"Gerar Doc Entrada", "U_GerPreNota", 0, 6})
+    aAdd(aRotina,{"Gerar Doc Entrada", "U_GerPreNota", 0, 6})
 
 	//Montando as cores da legenda
 	aAdd(aCores,{"Z22_STATUS == 'I' ", "BR_VERDE" })
@@ -815,7 +815,7 @@ User Function ShowCTE()
 	
 	//Montando o Browse
 	//mBrowse(6, 1, 22, 75, cArquivo, , , , , , aCores )
-  mBrowse(6, 1, 22, 75, cTabela, , , , , , aCores )
+    mBrowse(6, 1, 22, 75, cTabela, , , , , , aCores )
 	
 	//Encerrando a rotina
 	(cTabela)->(DbCloseArea())
@@ -847,103 +847,106 @@ Local _aArea    := GetArea()
 
 private lMsErroAuto
 
-  If Empty( Z22->Z22_STATUS )
+    If Empty( Z22->Z22_STATUS )
 
-    SF1->( dbSetOrder(1) ) 
-    If SF1->(dbSeek(xFilial("SF1")+PadR(Z22->Z22_DOC,TamSX3("F1_DOC")[1])+PadR(Z22->Z22_SERIE,TamSX3("F1_SERIE")[1])+PadR(Z22->Z22_FORNEC,TamSX3("F1_FORNECE")[1])+PadR(Z22->Z22_LOJAF,TamSX3("F1_LOJA")[1])+"N"))
+        SF1->( dbSetOrder(1) ) 
+        If .not. SF1->(dbSeek(xFilial("SF1")+PadR(Z22->Z22_DOC,TamSX3("F1_DOC")[1])+PadR(Z22->Z22_SERIE,TamSX3("F1_SERIE")[1])+PadR(Z22->Z22_FORNEC,TamSX3("F1_FORNECE")[1])+PadR(Z22->Z22_LOJAF,TamSX3("F1_LOJA")[1])+"N"))
 
-      begin sequence
+            begin sequence
 
-        aadd( _aCabec,{"F1_TIPO"   , "N"              , Nil, Nil})
-        aadd( _aCabec,{"F1_FORMUL" , "N"              , Nil, Nil})
-        aadd( _aCabec,{"F1_DOC"    , Z22->Z22_DOC     , Nil, Nil})
-        aadd( _aCabec,{"F1_CHVNFE" , Z22->Z22_CHAVE   , Nil, Nil})    
-        aadd( _aCabec,{"F1_SERIE"  , Z22->Z22_SERIE   , Nil, Nil})     
-        aadd( _aCabec,{"F1_EMISSAO", dDtEmissao       , Nil, Nil})
-        aadd( _aCabec,{"F1_FORNECE", Z22->Z22_FORNEC  , Nil, Nil})
-        aadd( _aCabec,{"F1_LOJA"   , Z22->Z22_LOJAF   , Nil, Nil})
-        aadd( _aCabec,{"F1_ESPECIE", "CTR"            , Nil, Nil})
+                // cNumero := NxtSx5Nota( Z22->Z22_SERIE, .T., GetNewPar("MV_TPNRNFS", "1")) 
 
-        _aItens 	:= {}
-        _cError   := ''
-        _cWarning := ''
+                aadd( _aCabec,{"F1_TIPO"   , "N"              , Nil, Nil})
+                aadd( _aCabec,{"F1_FORMUL" , "N"              , Nil, Nil})
+                aadd( _aCabec,{"F1_DOC"    , Z22->Z22_DOC     , Nil, Nil})
+                // aadd( _aCabec,{"F1_DOC"    , cNumero     , Nil, Nil})
+                aadd( _aCabec,{"F1_CHVNFE" , Z22->Z22_CHAVE   , Nil, Nil})    
+                aadd( _aCabec,{"F1_SERIE"  , Z22->Z22_SERIE   , Nil, Nil})     
+                aadd( _aCabec,{"F1_EMISSAO", Z22->Z22_DTEMIS  , Nil, Nil})
+                aadd( _aCabec,{"F1_FORNECE", Z22->Z22_FORNEC  , Nil, Nil})
+                aadd( _aCabec,{"F1_LOJA"   , Z22->Z22_LOJAF   , Nil, Nil})
+                aadd( _aCabec,{"F1_ESPECIE", "CTR"            , Nil, Nil})
 
-        _cPedido	:= ''
-        _cProduto := ''
-        _nQuant   := 0
-        _nVlrUni  := 0
-        _nVlrTot  := 0
+                _aItens 	:= {}
+                _cError   := ''
+                _cWarning := ''
 
-          _oXml := XmlParser( Z22->Z22_XML, "_", @_cError, @_cWarning)
+                _cPedido	:= ''
+                _cProduto := ''
+                _nQuant   := 0
+                _nVlrUni  := 0
+                _nVlrTot  := 0
 
-          if Empty( _cError ) .and. Empty( _cWarning )
+                _oXml := XmlParser( Z22->Z22_XML, "_", @_cError, @_cWarning)
 
-            If ValType( _oXml:_NFEPROC:_NFE:_INFNFE:_DET) == "O"			//-- So existe UM produto na Nota Fiscal
+                if Empty( _cError ) .and. Empty( _cWarning )
 
-                _cPedido	:= &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_XPED:TEXT")
-                _cProduto := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_CPROD:TEXT")
-                _nQuant   := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_QCOM:TEXT"))
-                _nVlrUni  := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_VUNCOM:TEXT"))
-                _nVlrTot  := _nQuant * _nVlrUni
+                    If ValType( _oXml:_NFEPROC:_NFE:_INFNFE:_DET) == "O"			//-- So existe UM produto na Nota Fiscal
 
-                _aLinha 	:= {}
-                aadd( _aLinha,{"D1_COD"   , _cProduto , Nil, Nil})
-                aadd( _aLinha,{"D1_QUANT" , _nQuant   , Nil, Nil})
-                aadd( _aLinha,{"D1_VUNIT" , _nVlrUni  , Nil, Nil})
-                aadd( _aLinha,{"D1_TOTAL" , _nVlrTot  , Nil, Nil})
-                aadd( _aLinha,{"D1_PEDIDO", _cPedido  , Nil, Nil})
-                aadd( _aLinha,{"D1_ITEMPC", "0001"    , Nil, Nil})
-                aadd( _aItens,aLinha)
+                        _cPedido  := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_XPED:TEXT")
+                        _cProduto := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_CPROD:TEXT")
+                        _nQuant   := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_QCOM:TEXT"))
+                        _nVlrUni  := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET:_PROD:_VUNCOM:TEXT"))
+                        _nVlrTot  := _nQuant * _nVlrUni
 
-            ElseIf ValType( _oXml:_NFEPROC:_NFE:_INFNFE:_DET) == "A"		//-- Ha MAIS de UM Item da Nota Fiscal
-              For _nPos := 1 to Len(oXML:_NFEPROC:_NFE:_INFNFE:_DET)
+                        _aLinha   := {}
+                        aadd( _aLinha,{"D1_COD"   , _cProduto , Nil, Nil})
+                        aadd( _aLinha,{"D1_QUANT" , _nQuant   , Nil, Nil})
+                        aadd( _aLinha,{"D1_VUNIT" , _nVlrUni  , Nil, Nil})
+                        aadd( _aLinha,{"D1_TOTAL" , _nVlrTot  , Nil, Nil})
+                        aadd( _aLinha,{"D1_PEDIDO", _cPedido  , Nil, Nil})
+                        aadd( _aLinha,{"D1_ITEMPC", "0001"    , Nil, Nil})
+                        aadd( _aItens,aLinha)
 
-                _cItem	  := "[" + Alltrim( Str(_nPos) ) + "]"
-                _cPedido	:= &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_XPED:TEXT")
-                _cProduto := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_CPROD:TEXT")
-                _nQuant   := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_QCOM:TEXT"))
-                _nVlrUni  := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_VUNCOM:TEXT"))
-                _nVlrTot  := _nQuant * _nVlrUni
+                    ElseIf ValType( _oXml:_NFEPROC:_NFE:_INFNFE:_DET) == "A"		//-- Ha MAIS de UM Item da Nota Fiscal
+                        For _nPos := 1 to Len(oXML:_NFEPROC:_NFE:_INFNFE:_DET)
 
-                _aLinha 	:= {}
-                aadd( _aLinha,{"D1_COD"   , _cProduto , Nil, Nil})
-                aadd( _aLinha,{"D1_QUANT" , _nQuant   , Nil, Nil})
-                aadd( _aLinha,{"D1_VUNIT" , _nVlrUni  , Nil, Nil})
-                aadd( _aLinha,{"D1_TOTAL" , _nVlrTot  , Nil, Nil})
-                aadd( _aLinha,{"D1_PEDIDO", _cPedido  , Nil, Nil})
-                aadd( _aLinha,{"D1_ITEMPC", _cItem    , Nil, Nil})
-                aadd( _aItens, _aLinha)
+                            _cItem	  := "[" + Alltrim( Str(_nPos) ) + "]"
+                            _cPedido  := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_XPED:TEXT")
+                            _cProduto := &("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_CPROD:TEXT")
+                            _nQuant   := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_QCOM:TEXT"))
+                            _nVlrUni  := Val(&("_oXml:_NFEPROC:_NFE:_INFNFE:_DET"+cItem+":_PROD:_VUNCOM:TEXT"))
+                            _nVlrTot  := _nQuant * _nVlrUni
 
-              Next
-            EndIf
+                            _aLinha 	:= {}
+                            aadd( _aLinha,{"D1_COD"   , _cProduto , Nil, Nil})
+                            aadd( _aLinha,{"D1_QUANT" , _nQuant   , Nil, Nil})
+                            aadd( _aLinha,{"D1_VUNIT" , _nVlrUni  , Nil, Nil})
+                            aadd( _aLinha,{"D1_TOTAL" , _nVlrTot  , Nil, Nil})
+                            aadd( _aLinha,{"D1_PEDIDO", _cPedido  , Nil, Nil})
+                            aadd( _aLinha,{"D1_ITEMPC", _cItem    , Nil, Nil})
+                            aadd( _aItens, _aLinha)
 
-						lMsErroAuto := .F.
+                        Next
+                    EndIf
 
-						//-- Definicao para entrada por pre-nota.
-            MsgRun("Aguarde gerando Pré-Nota de Entrada...",,{|| MSExecAuto ( {|x,y,z| MATA140(x,y,z) }, _aCabec, _aItens, 3)})                             
+                        lMsErroAuto := .F.
 
-						If lMsErroAuto
-							MostraErro()
-						Else
-              RecLock("Z22",.F.)
-                  Z22->Z22_STATUS  := 'I'
-              Z22->(MsUnlock())     
-            Endif
+                        //-- Definicao para entrada por pre-nota.
+                        MsgRun("Aguarde gerando Pré-Nota de Entrada...",,{|| MSExecAuto ( {|x,y,z| MATA140(x,y,z) }, _aCabec, _aItens, 3)})                             
+
+                        If lMsErroAuto
+                            MostraErro()
+                        Else
+                            RecLock("Z22",.F.)
+                                Z22->Z22_STATUS  := 'I'
+                            Z22->(MsUnlock())     
+                        Endif
+
+                Else
+                    msgAlert("Nao foram encontrados itens a CTE!","Atencao")
+                EndIf
+
+            end sequence
 
         Else
-          msgAlert("Nao foram encontrados itens a CTE!","Atencao")
+            msgAlert("Nao foi encontrado o documento na tabela SF1 !","Atencao")
         EndIf
 
-      end sequence
-
     Else
-      msgAlert("Nao foi encontrado o documento na tabela SF1 !","Atencao")
-    EndIf
+        msgAlert("Documento ja gerado!","Atencao")
+    Endif
 
-  Else
-    msgAlert("Documento ja gerado!","Atencao")
-  Endif
-
-  RestArea(_aArea)
+    RestArea(_aArea)
 
 Return
