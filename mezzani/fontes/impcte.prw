@@ -79,6 +79,7 @@ local _nPrecoLinha
 local _nValorLinha
 
 local _lOk          := .F.
+local _cMessage     := " "
 
 
 
@@ -125,7 +126,7 @@ local _lOk          := .F.
 
                     If .not. XmlChildEx( _oXml ,"_CTEPROC") == Nil
 
-                        // Transportadoras
+                        // Emitente
                         if  .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE, "_EMIT") == Nil .OR. ;
                             .not. XmlChildEx( _oXml:_CTEPROC:_CTE:_INFCTE:_EMIT, "_ENDEREMIT")  == Nil
 
@@ -504,6 +505,8 @@ local _lOk          := .F.
                                             //
                                             _lOk := .F.
 
+                                            _cMessage := "Nao foi identificada itens no documento importado"
+
                                             conout( "[" + DToS( Date() ) + "][" + Time() + "] Nao foram identificados itens no documento : " + _aArquivos[ _nPos ] )
                                         Endif
 
@@ -512,6 +515,8 @@ local _lOk          := .F.
                                         // Problemas com o CNPJ do clieente informando no arquivo
                                         //
                                         _lOk := .F.
+
+                                        _cMessage := "Nao foi identificada informacoes de CNPJ do cliente"
 
                                         conout( "[" + DToS( Date() ) + "][" + Time() + "] Problemas com o CNPJ do clieente informando no arquivo : " + _aArquivos[ _nPos ] )
                                     endif
@@ -522,20 +527,38 @@ local _lOk          := .F.
                                     //
                                     _lOk := .F.
 
+                                    _cMessage := "Nao foi identificada informacoes do destino"
+
                                     conout( "[" + DToS( Date() ) + "][" + Time() + "] Problema na estrutura do arquivo : " + _aArquivos[ _nPos ] )
                                 Endif
 
+                            Else
+                                _lOk := .F.
+
+                                _cMessage := "Nao foi identificada informacoes do remetente"
                             Endif
 
+                        Else
+                            _lOk := .F.
+
+                            _cMessage := "Nao foi identificada informacoes do emitente"
                         EndIf
 
-                    EndIf
+                    Else
+                        _lOk := .F.
+
+                        _cMessage := "Nao foi identificada a TAG _CTEPROC no arquivo importado"
+
+                    EndIf 
 
                 Else
                     //
                     // Caso Erro ao processar o arquivo XML, move para a pasta de erros
                     //
                     _lOk := .F.
+
+                    _cMessage := "Erro XML - " + AllTrim( _cError ) + " - " + AllTrim( _cWarning )
+
                 EndIf
 
                 FClose( _nHandle )
@@ -545,6 +568,9 @@ local _lOk          := .F.
                 // Caso Erro ao processar o arquivo XML, move para a pasta de erros
                 //
                 _lOk := .F.
+
+                _cMessage := "Nao foi possival realiar a abertura do arquivo - " + AllTrim( _cDirIn + _aArquivos[ _nPos ] )
+
             EndIf
 
             if _lOk
@@ -552,7 +578,7 @@ local _lOk          := .F.
                 // Arquivo Processado Corretamente
                 //
 
-                EnvEmail( 2, _aArquivos[ _nPos ] )                
+                EnvEmail( 1, _aArquivos[ _nPos ], _cMessage )                
                 If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirOu + _aArquivos[ _nPos ] )
                   FErase( _cDirIn + _aArquivos[ _nPos ] )
                 Endif
@@ -562,7 +588,7 @@ local _lOk          := .F.
                 // Caso tenha ocorrido algum erro na abertura do arquivo move para a pasta de erros
                 //
 
-                EnvEmail( 1, _aArquivos[ _nPos ] )
+                EnvEmail( 2, _aArquivos[ _nPos ], _cMessage )
                 If __CopyFile( _cDirIn + _aArquivos[ _nPos ], _cDirEr + _aArquivos[ _nPos ] )
                     FErase( _cDirIn + _aArquivos[ _nPos ] )
                 Endif
@@ -679,7 +705,7 @@ Return _nRetValue
 	@author Edilson Nascimento
 	@since 29/11/2021
 /*/
-Static Procedure EnvEmail( nCodEnv, cNomeArq)
+Static Procedure EnvEmail( nCodEnv, cNomeArq, cMsg)
 
 Local cXServer 	:= SuperGetMV( "MV_RELACNT",, " ") // Conta de email para o envio
 Local cXConta  	:= SuperGetMV( "MV_RELAUSR",, " ") // Usuario para autenticacao na conta
@@ -687,6 +713,8 @@ Local cPasswrd 	:= SuperGetMV( "MV_RELAPSW",, " ") // Senha para autenticacao no
 Local cXDestin 	:= SuperGetMV( "MV_USR_ENV",, " ") // Relacao de usuario que irao recber o status do arquivo importado
 Local cEmRemet 	:= SuperGetMV( "MV_USR_REM",, " ") // Relacao do usuario que esta realizando o envio do status para o usuario
 Local cXAssunt  := "INTEGRACAO CTE"
+
+    DEFAULT cMsg := " "
 
 
     cHTML := '<!DOCTYPE html>'
@@ -701,6 +729,7 @@ Local cXAssunt  := "INTEGRACAO CTE"
           cHTML += 'Arquivo: ' + cNomeArq + ' - Importado Corretamente'
         case nCodEnv == 2
           cHTML += 'Arquivo: ' + cNomeArq + ' - Erro na Importacao'
+          cHTML += '   Erro: ' + cMsg
       endcase
     cHTML += '</body>'
     cHTML += '</html>'
