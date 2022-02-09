@@ -85,10 +85,25 @@ local _lOk          := .F.
     // PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" USER "admin" PASSWORD "2Latin3" TABLES "SA1", "SA2", "SA4", "Z22", "Z30", "Z31", "Z32" MODULO "FAT"
     PREPARE ENVIRONMENT EMPRESA "01" FILIAL "01" USER "admin" PASSWORD "2018@0521" TABLES "SA1", "SA2", "SA4", "Z22", "Z30", "Z31", "Z32" MODULO "FAT"
 
-    // Diretorio com os arquivos XML a processar
+
+    // Tratamento para o parametro In        
     _cDirIn := SuperGetMV( "MV_CTE_IN",, "\xmlcte\in\")
+    If Right( AllTrim( _cDirIn ), 1 ) != '\'
+        _cDirIn := AllTrim( _cDirIn) + '\'
+    EndIf
+
+    // Tratamento para o parametro Ou
     _cDirOu := SuperGetMV( "MV_CTE_OU",, "\xmlcte\ou\")
+    If Right( AllTrim( _cDirOu ), 1 ) != '\'
+        _cDirIn := AllTrim( _cDirOu) + '\'
+    EndIf
+    
+    // Tratamento para o parametro Er
     _cDirEr := SuperGetMV( "MV_CTE_ER",, "\xmlcte\er\")
+    If Right( AllTrim( _cDirEr ), 1 ) != '\'
+        _cDirEr := AllTrim( _cDirEr) + '\'
+    EndIf
+    
 
 
     ADir( _cDirIn + '*.xml', _aArquivos, _aTam )
@@ -691,7 +706,8 @@ Local cXAssunt  := "INTEGRACAO CTE"
     cHTML += '</html>'
 
 
-    EnvMailC(cXDestin , cXServer , cXConta , cEmRemet , cPasswrd , cHTML, cXAssunt)
+    // EnvMailC(cXDestin , cXServer , cXConta , cEmRemet , cPasswrd , cHTML, cXAssunt)
+    U_NewEmail( cXConta, cXDestin, cEmRemet , cXAssunt, cHTML, .F. )
 
 Return
 
