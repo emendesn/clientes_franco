@@ -990,7 +990,7 @@ private lMsErroAuto
                                 If ValType( _oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA:_INFQ) == "O"			//-- So existe UM produto na Nota Fiscal
 
                                     _cPedido  := Alltrim( Str(_nPos) )
-                                    _cProduto := _oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA:_INFQ:_TPMED:TEXT
+                                    _cProduto := _oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA:_PROPRED:TEXT
                                     _nQuant   := Val(_oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA:_INFQ:_CUNID:TEXT)
                                     _nVlrUni  := Val(_oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA:_INFQ:_QCARGA:TEXT)
                                     _nVlrTot  := _nQuant * _nVlrUni
