@@ -1001,7 +1001,7 @@ private lMsErroAuto
                                     aadd( _aLinha,{"D1_VUNIT" , _nVlrUni  , Nil, Nil})
                                     aadd( _aLinha,{"D1_TOTAL" , _nVlrTot  , Nil, Nil})
                                     aadd( _aLinha,{"D1_PEDIDO", _cPedido  , Nil, Nil})
-                                    aadd( _aLinha,{"D1_ITEMPC", "0001"    , Nil, Nil})
+                                    aadd( _aLinha,{"D1_ITEMPC", "001"     , Nil, Nil})
                                     aadd( _aItens,aLinha)
 
                                 ElseIf ValType( _oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA:_INFQ) == "A"		//-- Ha MAIS de UM Item da Nota Fiscal
@@ -1020,7 +1020,7 @@ private lMsErroAuto
                                         aadd( _aLinha,{"D1_VUNIT" , _nVlrUni,            Nil, Nil})
                                         aadd( _aLinha,{"D1_TOTAL" , _nVlrTot,            Nil, Nil})
                                         aadd( _aLinha,{"D1_PEDIDO", _cPedido,            Nil, Nil})
-                                        aadd( _aLinha,{"D1_ITEMPC", StrZero( _nPos, 4 ), Nil, Nil})
+                                        aadd( _aLinha,{"D1_ITEMPC", StrZero( _nPos, 3 ), Nil, Nil})
                                         aadd( _aItens, _aLinha)
 
                                     Next
