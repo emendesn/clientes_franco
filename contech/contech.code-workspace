@@ -6,9 +6,10 @@
 		}
 	],
 	"settings": {
+    "workbench.colorTheme": "Monokai",
 		"window.zoomLevel": 0,
 		"files.autoSave": "afterDelay",
-		"totvsLanguageServer.welcomePage": false,
+    "files.encoding": "utf8",
 		"files.exclude": {
 			".gitignore": true,
 			".vscode": true,
@@ -18,6 +19,28 @@
 			"**/atualizacoes": true
     },
     "editor.tabSize": 2,
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "totvsLanguageServer.workspaceServerConfig": true,
+		"totvsLanguageServer.welcomePage": false,
+    "totvsLanguageServer.folder.extensionsAllowed": [
+      ".PRW",
+			".PRX",
+			".PRG",
+			".PPX",
+			".PPP",
+			".TLPP",
+			".APW",
+			".APH",
+			".APL",
+			".AHU",
+			".TRES",
+			".PNG",
+			".BMP",
+			".RES",
+			".4GL",
+			".PER",
+			".JS",
+			".RPTDESIGN"
+    ]
 	}
 }
